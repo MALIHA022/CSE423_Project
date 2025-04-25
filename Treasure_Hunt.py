@@ -4,7 +4,7 @@ from OpenGL.GLU import *
 import math
 import random
 
-camera_pos = (1000, 2500, 0)
+camera_pos = (500, 1600, 0)
 
 GRID_LENGTH = 100  
 GRID_SIZE = 32
@@ -19,8 +19,10 @@ game_over = False
 life = 5
 collected = 0
 remaining = 5
-min_bound = (-GRID_SIZE * GRID_LENGTH // 2) + 150
-max_bound = (GRID_SIZE * GRID_LENGTH // 2) - 150
+min_bound = (-GRID_SIZE * GRID_LENGTH // 2) + 100
+max_bound = (GRID_SIZE * GRID_LENGTH // 2) - 100
+
+wall_positions = [] 
 
 def draw_text(x, y, text, font = GLUT_BITMAP_HELVETICA_18): # type: ignore
     glColor3f(1,1,1)
@@ -141,17 +143,19 @@ def draw_cube(x, y, z, size=100):
     glPopMatrix()
 
 def draw_maze():
-    global player_pos
+    global player_pos, wall_positions
+    wall_positions.clear()
     for row in range(len(maze)):
         for col in range(len(maze[row])):
             if maze[row][col] == 1:
                 x = (col - len(maze[0]) // 2) * GRID_LENGTH
                 z = (row - len(maze) // 2) * GRID_LENGTH
                 draw_cube(x, 25, z)
+                wall_positions.append((x, z))
 
 def draw_player():
     glPushMatrix()
-    glTranslatef(player_pos[0], 150, player_pos[2])
+    glTranslatef(player_pos[0], 50, player_pos[2])
     glRotatef(player_angle, 0, 0, 1)  
 
     if game_over:
@@ -159,12 +163,25 @@ def draw_player():
 
     # Head
     glColor3f(1, 0, 0)
-    gluSphere(gluNewQuadric(), 30, 10, 10)
+    gluSphere(gluNewQuadric(), 50, 10, 10)
 
     glPopMatrix()
 
 def draw_enemy():
     pass
+
+def is_wall(x, z):
+    offsets = [(-10, 0), (10, 0), (0, -10), (0, 10)]
+    for dx, dz in offsets:
+        col = int((x + dx + (len(maze[0]) // 2) * GRID_LENGTH) // GRID_LENGTH)
+        row = int((z + dz + (len(maze) // 2) * GRID_LENGTH) // GRID_LENGTH)
+        if 1 <= row < len(maze) and 1 <= col < len(maze[0]):
+            if maze[row][col] == 1:
+                return True
+        else:
+            return True 
+    return False
+
 
 def mouseListener(button, state, x, y):
     pass
@@ -175,60 +192,52 @@ def keyboardListener(key, x, y):
 def specialKeyListener(key, x, y):
     global player_pos, min_bound, max_bound, GRID_SIZE
     speed = 10
-    # Unpack player position from global
     px, py, pz = player_pos
 
     if not game_over:
         angle = math.radians(player_angle)
 
-        if key == GLUT_KEY_UP:  # Move player up (forward)
+        if key == GLUT_KEY_UP:  # Move player forward
             dx = -math.cos(angle) * speed
             dz = -math.sin(angle) * speed
 
             new_x = px + dx
             new_z = pz + dz
 
-            # Clamp within bounds
-            if min_bound <= new_x <= max_bound and min_bound <= new_z <= max_bound:
-                player_pos = [new_x, py, new_z]  # Update player position
+            if not is_wall(new_x, new_z):
+                    player_pos = [new_x, py, new_z]  
 
-        elif key == GLUT_KEY_DOWN:  # Move player down (backward)
+        elif key == GLUT_KEY_DOWN:  # Move player backward
             dx = math.cos(angle) * speed
             dz = math.sin(angle) * speed
 
             new_x = px + dx
             new_z = pz + dz
 
-            # Clamp within bounds
-            if min_bound <= new_x <= max_bound and min_bound <= new_z <= max_bound:
-                player_pos = [new_x, py, new_z]  # Update player position
+            if not is_wall(new_x, new_z):
+                    player_pos = [new_x, py, new_z]  
 
-        # LEFT key (strafe left, perpendicular to the forward direction)
-        elif key == GLUT_KEY_RIGHT:  
-            dx = math.sin(angle) * speed  # Move in the X direction perpendicular to the angle
-            dz = -math.cos(angle) * speed  # Move in the Z direction perpendicular to the angle
+        elif key == GLUT_KEY_RIGHT:  #move player right
+            dx = math.sin(angle) * speed  
+            dz = -math.cos(angle) * speed  
 
             new_x = px + dx
             new_z = pz + dz
 
-            # Clamp within bounds
-            if min_bound <= new_x <= max_bound and min_bound <= new_z <= max_bound:
-                player_pos = [new_x, py, new_z]  # Update player position
+            if not is_wall(new_x, new_z):
+                    player_pos = [new_x, py, new_z] 
 
-        # RIGHT key (strafe right, opposite of left)
-        elif key == GLUT_KEY_LEFT:  
-            dx = -math.sin(angle) * speed  # Move in the X direction perpendicular to the angle
-            dz = math.cos(angle) * speed  # Move in the Z direction perpendicular to the angle
+        elif key == GLUT_KEY_LEFT:  #move player left
+            dx = -math.sin(angle) * speed
+            dz = math.cos(angle) * speed 
 
             new_x = px + dx
             new_z = pz + dz
 
-            # Clamp within bounds
-            if min_bound <= new_x <= max_bound and min_bound <= new_z <= max_bound:
-                player_pos = [new_x, py, new_z]  # Update player position
+            if not is_wall(new_x, new_z):
+                    player_pos = [new_x, py, new_z]  # Update player position
 
-    # Ensure player position is updated correctly
-    px, py, pz = player_pos  # Update the local player position variables
+    px, py, pz = player_pos 
 
 
 
@@ -237,7 +246,40 @@ def set_camera():
               0,0,0,  # Looking towards center
               0, 1, 0)
 
-def EnemyPLayerInteraction(): #collision detection
+# def set_camera():  #corrected set_camera() for first and third person mode
+#     global player_pos, player_angle, camera_mode
+
+#     px, py, pz = player_pos
+
+#     if camera_mode == "third":
+#         distance = 150
+#         height = 200
+
+#         angle_rad = math.radians(player_angle)
+
+#         cam_x = px + math.cos(angle_rad) * distance
+#         cam_y = py + height
+#         cam_z = pz + math.sin(angle_rad) * distance
+
+#         gluLookAt(cam_x, cam_y, cam_z,  
+#                   px, py + 50, pz,      
+#                   0, 1, 0)              
+
+#     elif camera_mode == "first":
+#         angle_rad = math.radians(player_angle)
+
+#         eye_x = px
+#         eye_y = py + 50 
+#         eye_z = pz
+
+#         look_x = eye_x - math.cos(angle_rad) * 100
+#         look_z = eye_z - math.sin(angle_rad) * 100
+
+#         gluLookAt(eye_x, eye_y, eye_z,   
+#                   look_x, eye_y, look_z, 
+#                   0, 1, 0)               
+
+def EnemyPLayerInteraction(): #enemy collision detection
     pass
 
 def cheat_mode():
@@ -266,14 +308,13 @@ def showScreen():
         draw_text(10, 440, f'Press "R" to RESTART the Game.')
 
     draw_player()
-
     glutSwapBuffers()
 
 def init():
     glClearColor(0.1, 0.1, 0.1, 1.0)
     glEnable(GL_DEPTH_TEST)
     glMatrixMode(GL_PROJECTION)
-    gluPerspective(90, 1.25, 1, -1000)
+    gluPerspective(120, 1.25, 1, -1000)
     glMatrixMode(GL_MODELVIEW)
 
 def main():
