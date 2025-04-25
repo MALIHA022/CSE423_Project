@@ -1,6 +1,8 @@
 from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
+import math
+import random
 
 camera_pos = (1000, 2500, 0)
 
@@ -8,14 +10,7 @@ GRID_LENGTH = 100
 GRID_SIZE = 32
 
 # Game stats
-cell_size = 100
-r,c = 12,13
-offset = GRID_LENGTH // 2  # Center in the cell
-
-player_pos = [c * GRID_LENGTH + offset, 0, r * GRID_LENGTH + offset]
-
-
-# player_pos = [0, 0, 0]
+player_pos = [13 * GRID_LENGTH + (GRID_LENGTH // 2), 0, 12 * GRID_LENGTH + (GRID_LENGTH // 2)]
 player_angle = 0
 camera_mode = "third"  
 game_over = False
@@ -24,8 +19,8 @@ game_over = False
 life = 5
 collected = 0
 remaining = 5
-min_bound = -GRID_SIZE * GRID_LENGTH // 2
-max_bound = GRID_SIZE * GRID_LENGTH // 2
+min_bound = (-GRID_SIZE * GRID_LENGTH // 2) + 150
+max_bound = (GRID_SIZE * GRID_LENGTH // 2) - 150
 
 def draw_text(x, y, text, font = GLUT_BITMAP_HELVETICA_18): # type: ignore
     glColor3f(1,1,1)
@@ -178,7 +173,64 @@ def keyboardListener(key, x, y):
     pass
 
 def specialKeyListener(key, x, y):
-    pass
+    global player_pos, min_bound, max_bound, GRID_SIZE
+    speed = 10
+    # Unpack player position from global
+    px, py, pz = player_pos
+
+    if not game_over:
+        angle = math.radians(player_angle)
+
+        if key == GLUT_KEY_UP:  # Move player up (forward)
+            dx = -math.cos(angle) * speed
+            dz = -math.sin(angle) * speed
+
+            new_x = px + dx
+            new_z = pz + dz
+
+            # Clamp within bounds
+            if min_bound <= new_x <= max_bound and min_bound <= new_z <= max_bound:
+                player_pos = [new_x, py, new_z]  # Update player position
+
+        elif key == GLUT_KEY_DOWN:  # Move player down (backward)
+            dx = math.cos(angle) * speed
+            dz = math.sin(angle) * speed
+
+            new_x = px + dx
+            new_z = pz + dz
+
+            # Clamp within bounds
+            if min_bound <= new_x <= max_bound and min_bound <= new_z <= max_bound:
+                player_pos = [new_x, py, new_z]  # Update player position
+
+        # LEFT key (strafe left, perpendicular to the forward direction)
+        elif key == GLUT_KEY_RIGHT:  
+            dx = math.sin(angle) * speed  # Move in the X direction perpendicular to the angle
+            dz = -math.cos(angle) * speed  # Move in the Z direction perpendicular to the angle
+
+            new_x = px + dx
+            new_z = pz + dz
+
+            # Clamp within bounds
+            if min_bound <= new_x <= max_bound and min_bound <= new_z <= max_bound:
+                player_pos = [new_x, py, new_z]  # Update player position
+
+        # RIGHT key (strafe right, opposite of left)
+        elif key == GLUT_KEY_LEFT:  
+            dx = -math.sin(angle) * speed  # Move in the X direction perpendicular to the angle
+            dz = math.cos(angle) * speed  # Move in the Z direction perpendicular to the angle
+
+            new_x = px + dx
+            new_z = pz + dz
+
+            # Clamp within bounds
+            if min_bound <= new_x <= max_bound and min_bound <= new_z <= max_bound:
+                player_pos = [new_x, py, new_z]  # Update player position
+
+    # Ensure player position is updated correctly
+    px, py, pz = player_pos  # Update the local player position variables
+
+
 
 def set_camera():
     gluLookAt(camera_pos[0], camera_pos[1], camera_pos[2], 
@@ -233,6 +285,7 @@ def main():
 
     init()
     glutDisplayFunc(showScreen)
+    glutSpecialFunc(specialKeyListener)
     glutIdleFunc(idle)
 
     glutMainLoop()
