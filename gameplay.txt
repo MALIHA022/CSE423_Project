@@ -27,7 +27,7 @@ Cheat Mode:
 3. Enables flying and only works in first-person camera mode.
 
 Visual Design:
-1. Game platform and Maze walls:  Cubes arranged from a 2D maze array.
+1. Game platform and Maze walls:  Cubes arranged from a 2D maze array.  Maliha
 2. Treasures: Small colored spheres, visually distinct.
 3. Enemies: Pulsing spheres
 4. Player: Built using sphere, cube and cylinder.
@@ -35,4 +35,4 @@ Visual Design:
 Game States:
 1. Win Condition: All 5 treasures collected and player reaches goal.
 2. Lose Condition: Player’s lives reach 0 (disables further movement/collection).
-3.  display for timer, score, and collection progress.
+3. display for timer, score, and collection progress.
