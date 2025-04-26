@@ -13,6 +13,7 @@ GRID_SIZE = 32
 player_pos = [13 * GRID_LENGTH + (GRID_LENGTH // 2), 0, 12 * GRID_LENGTH + (GRID_LENGTH // 2)]
 player_angle = 0
 camera_mode = "third"  
+rotate = False
 game_over = False
 
 # Player stats
@@ -27,8 +28,8 @@ enemies = []
 
 #cheat mode
 egg_visible = True
-# cheat_egg_positions = [(-550, 50, 265), (450, 50, 1350), (550, 50, -850), (1180, 50, 500)]
-# cheat_egg_pos = list(random.choice(cheat_egg_positions)) 
+cheat_egg_positions = [(-550, 50, 265), (450, 50, 1350), (550, 50, -850), (1180, 50, 500)]
+cheat_egg_pos = list(random.choice(cheat_egg_positions)) 
 cheat_sequence = ['UP', 'UP', 'DOWN', 'DOWN', 'LEFT', 'RIGHT', 'LEFT', 'RIGHT']
 sequence_index = 0
 cheat_mode = False
@@ -36,7 +37,7 @@ cheat_ready = False
 egg_visible = True
 skip_wall_collision = False
 
-cheat_egg_pos  = (1500, 50, 1200)
+# cheat_egg_pos  = (1500, 50, 1200)
 
 def draw_text(x, y, text, font = GLUT_BITMAP_HELVETICA_18): # type: ignore
     glColor3f(1,1,1)
@@ -240,10 +241,6 @@ def cheat_egg_collision():
             sequence_index = 0  
             print("Went too far from egg.")
 
-
-def mouseListener(button, state, x, y):
-    pass
-
 def keyboardListener(key, x, y):
     if key == b'r': #restart
         pass
@@ -256,8 +253,7 @@ def keyboardListener(key, x, y):
 
 
 def specialKeyListener(key, x, y):
-    global player_pos, sequence_index, cheat_mode, cheat_ready, egg_visible
-
+    global player_pos, sequence_index, cheat_mode, cheat_ready, egg_visible, camera_mode, player_angle, rotate
     speed = 10
     px, py, pz = player_pos
 
@@ -292,6 +288,7 @@ def specialKeyListener(key, x, y):
         glutPostRedisplay()
 
     #normal player movement
+    angle_step = 5
     if not game_over:
         angle = math.radians(player_angle)
 
@@ -316,38 +313,57 @@ def specialKeyListener(key, x, y):
                 player_pos = [new_x, py, new_z]
 
         elif key == GLUT_KEY_RIGHT:  # Move player right
-            dx = math.sin(angle) * speed  
-            dz = -math.cos(angle) * speed  
+            if camera_mode == "third" and rotate == False:
+                dx = math.sin(angle) * speed  
+                dz = -math.cos(angle) * speed  
 
-            new_x = px + dx
-            new_z = pz + dz
+                new_x = px + dx
+                new_z = pz + dz
 
-            if not is_wall(new_x, new_z):
-                player_pos = [new_x, py, new_z]
+                if not is_wall(new_x, new_z):
+                    player_pos = [new_x, py, new_z]
+                player_angle = 0
+            if camera_mode == 'first' or (camera_mode == "third" and rotate == True):
+                player_angle -= angle_step
 
         elif key == GLUT_KEY_LEFT:  # Move player left
-            dx = -math.sin(angle) * speed
-            dz = math.cos(angle) * speed 
+            if camera_mode == "third" and rotate == False:
+                dx = -math.sin(angle) * speed
+                dz = math.cos(angle) * speed 
 
-            new_x = px + dx
-            new_z = pz + dz
+                new_x = px + dx
+                new_z = pz + dz
 
-            if not is_wall(new_x, new_z):
-                player_pos = [new_x, py, new_z]
+                if not is_wall(new_x, new_z):
+                    player_pos = [new_x, py, new_z]
+                player_angle = 0
+            if camera_mode == 'first' or (camera_mode == "third" and rotate == True):
+                player_angle += angle_step
 
     px, py, pz = player_pos
 
 def mouseListener(button, state, x, y):
-    if button == GLUT_LEFT_BUTTON and state == GLUT_DOWN: #camera toggle
-        pass
+    global camera_mode, rotate, player_angle
+    if button == GLUT_LEFT_BUTTON and state == GLUT_DOWN and not game_over: #camera toggle
+        if camera_mode == "third":
+            camera_mode = "first"
+        else:
+            camera_mode = "third"
+        print(f"Switched to {camera_mode}-person mode")
+        
+        glutPostRedisplay()
 
-    if button == GLUT_RIGHT_BUTTON and state == GLUT_DOWN: #jump over enemy/any other function - optional
-        pass
-
+    if button == GLUT_RIGHT_BUTTON and state == GLUT_DOWN:
+        rotate = not rotate
+        if rotate == False and camera_mode == 'third':
+            player_angle = 0
+            print("Rotate: Off")
+        else:
+            print("Rotate: On")
 
 def set_camera():
     gluLookAt(camera_pos[0], camera_pos[1], camera_pos[2], 
-              0,0,0,  # Looking towards center
+              0,0,0,   
               0, 1, 0)
 
 def set_camera():  #corrected set_camera() for first and third person mode
@@ -373,7 +389,7 @@ def set_camera():  #corrected set_camera() for first and third person mode
         angle_rad = math.radians(player_angle)
 
         eye_x = px
-        eye_y = py + 50 
+        eye_y = py + 120 
         eye_z = pz
 
         look_x = eye_x - math.cos(angle_rad) * 100
@@ -398,8 +414,8 @@ def cheat():
     global player_pos, skip_wall_collision
 
     if cheat_mode:
-        if player_pos[1] < 250:   # Gradually raise
-            player_pos[1] += 10    # move up slowly
+        if player_pos[1] < 250:    
+            player_pos[1] += 10    
         skip_wall_collision = True
     else:
         skip_wall_collision = False
@@ -453,8 +469,9 @@ def main():
 
     init()
     glutDisplayFunc(showScreen)
-    glutSpecialFunc(specialKeyListener)  # Handles special keys (arrow keys)
-    glutKeyboardFunc(keyboardListener)  # Handles regular key presses
+    glutSpecialFunc(specialKeyListener)   
+    glutKeyboardFunc(keyboardListener)   
+    glutMouseFunc(mouseListener)
     glutIdleFunc(idle)
 
     glutMainLoop()

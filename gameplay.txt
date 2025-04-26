@@ -1,9 +1,12 @@
 Gameplay:
 1. Player explores a 3D maze built using cubes.
 2. Movement system- arrow keys movement.  Maliha - Done
-3. Camera toggle between first-person and third-person views.  Cheat mode only available in third-person mode. Maliha
-4. Objective: Collect all 5 unique colored treasures and reach the goal.
-5. A red bonus treasure unlocks cheat mode when a secret key combo is triggered. the game can be completed even without triggering the cheat mode 
+3. Camera toggle between first-person and third-person views with mouse left button click. Maliha - Done
+4. Player rotation toggle with mouse right button click.  Maliha - Done
+    - Player can always rotate in first person mode.  Done
+    - Rotation toggle is used in third person mode    Done
+5. Objective: Collect all 5 unique colored treasures and reach the goal.
+6. A red bonus treasure unlocks cheat mode when a secret key combo is triggered. the game can be completed even without triggering the cheat mode 
 
 Player: Nazah
 1. Constructed using basic shapes (sphere, cylinder, cube).
