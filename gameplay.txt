@@ -21,10 +21,10 @@ Enemies: Moontaha
 2. Cannot be killed and doesn’t chase the player.
 3. Collision results in player losing a life.
 
-Cheat Mode: Maliha
+Cheat Mode: Maliha - Done
 1. Unlocked only after:
 2. Collecting the bonus treasure and entering a secret key combination.
-3. Enables flying and only works in first-person camera mode.
+3. Enables flying and avoids wall collision.
 
 Visual Design:
 1. Game platform and Maze walls:  Cubes arranged from a 2D maze array.  Maliha - Done

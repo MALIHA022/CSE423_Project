@@ -26,8 +26,17 @@ max_bound = (GRID_SIZE * GRID_LENGTH // 2) - 100
 enemies = []
 
 #cheat mode
-cheat_egg_positions = [(-550, 0, 265), (450, 0, 1350), (550, 0, -850), (1180, 0, 500)]
-cheat_egg_pos = list(random.choice(cheat_egg_positions)) 
+egg_visible = True
+# cheat_egg_positions = [(-550, 50, 265), (450, 50, 1350), (550, 50, -850), (1180, 50, 500)]
+# cheat_egg_pos = list(random.choice(cheat_egg_positions)) 
+cheat_sequence = ['UP', 'UP', 'DOWN', 'DOWN', 'LEFT', 'RIGHT', 'LEFT', 'RIGHT']
+sequence_index = 0
+cheat_mode = False
+cheat_ready = False
+egg_visible = True
+skip_wall_collision = False
+
+cheat_egg_pos  = (1500, 50, 1200)
 
 def draw_text(x, y, text, font = GLUT_BITMAP_HELVETICA_18): # type: ignore
     glColor3f(1,1,1)
@@ -157,7 +166,10 @@ def draw_maze():
 
 def draw_player():
     glPushMatrix()
-    glTranslatef(player_pos[0], 50, player_pos[2])
+    if cheat_mode:
+        glTranslatef(player_pos[0], 100, player_pos[2])
+    else:
+        glTranslatef(player_pos[0], 50, player_pos[2])
     glRotatef(player_angle, 0, 0, 1)  
 
     if game_over:
@@ -175,7 +187,10 @@ def spawn_enemy():
     pass
 
 def draw_cheat_egg():
-    global cheat_egg_pos
+    global cheat_egg_pos , egg_visible
+    
+    if not egg_visible:
+        return  # Skip drawing if not visible
 
     glPushMatrix()
     glTranslatef(*cheat_egg_pos)
@@ -190,16 +205,40 @@ def draw_cheat_egg():
 
 
 def is_wall(x, z):
-    offsets = [(-10, 0), (10, 0), (0, -10), (0, 10)]
-    for dx, dz in offsets:
-        col = int((x + dx + (len(maze[0]) // 2) * GRID_LENGTH) // GRID_LENGTH)
-        row = int((z + dz + (len(maze) // 2) * GRID_LENGTH) // GRID_LENGTH)
-        if 1 <= row < len(maze) and 1 <= col < len(maze[0]):
-            if maze[row][col] == 1:
-                return True
-        else:
-            return True 
-    return False
+    if not cheat_mode:
+        offsets = [(-10, 0), (10, 0), (0, -10), (0, 10)]
+        for dx, dz in offsets:
+            col = int((x + dx + (len(maze[0]) // 2) * GRID_LENGTH) // GRID_LENGTH)
+            row = int((z + dz + (len(maze) // 2) * GRID_LENGTH) // GRID_LENGTH)
+            if 1 <= row < len(maze) and 1 <= col < len(maze[0]):
+                if maze[row][col] == 1:
+                    return True
+            else:
+                return True 
+        return False
+
+def cheat_egg_collision():
+    global cheat_ready, sequence_index, player_pos, cheat_egg_pos
+    px, py, pz = player_pos
+    cex, cey, cez = cheat_egg_pos
+
+    distance_x = abs(px - cex)
+    distance_y = abs(py - cey)
+    distance_z = abs(pz - cez)
+
+    collision = distance_x < 60 and distance_y < 60 and distance_z < 60
+    left_egg = distance_x > 100 or distance_y > 100 or distance_z > 100
+
+    if collision:
+        if not cheat_ready:
+            cheat_ready = True
+            print("You found a mysterious egg... A whisper echoes: ↑ ↑ ↓ ↓ ← → ← →")
+    
+    elif left_egg:
+        if cheat_ready and not cheat_mode:  
+            cheat_ready = False
+            sequence_index = 0  
+            print("Went too far from egg.")
 
 
 def mouseListener(button, state, x, y):
@@ -215,11 +254,44 @@ def keyboardListener(key, x, y):
     if key == b'\x1b': #close game window/ exit game
         pass
 
+
 def specialKeyListener(key, x, y):
-    global player_pos, min_bound, max_bound, GRID_SIZE
+    global player_pos, sequence_index, cheat_mode, cheat_ready, egg_visible
+
     speed = 10
     px, py, pz = player_pos
 
+    # Map special keys (arrows) to your cheat sequence
+    key_map = {
+        GLUT_KEY_UP: 'UP',
+        GLUT_KEY_DOWN: 'DOWN',
+        GLUT_KEY_LEFT: 'LEFT',
+        GLUT_KEY_RIGHT: 'RIGHT'
+    }
+
+    # Handle special keys (arrow keys)
+    if key in key_map:
+        pressed_key = key_map[key]
+        
+        # CHEAT MODE ACTIVATION PROCESS
+        if cheat_ready and not cheat_mode:
+            expected_key = cheat_sequence[sequence_index]
+            
+            if pressed_key == expected_key:
+                sequence_index += 1
+                display_cheat_progress()
+                if sequence_index == len(cheat_sequence):
+                    cheat_mode = True
+                    egg_visible = False
+                    print("CHEAT MODE ACTIVATED!")
+            
+            else:
+                print(f"Wrong key! Restarting sequence.")
+                sequence_index = 0
+        
+        glutPostRedisplay()
+
+    #normal player movement
     if not game_over:
         angle = math.radians(player_angle)
 
@@ -231,7 +303,7 @@ def specialKeyListener(key, x, y):
             new_z = pz + dz
 
             if not is_wall(new_x, new_z):
-                    player_pos = [new_x, py, new_z]  
+                player_pos = [new_x, py, new_z]  
 
         elif key == GLUT_KEY_DOWN:  # Move player backward
             dx = math.cos(angle) * speed
@@ -241,9 +313,9 @@ def specialKeyListener(key, x, y):
             new_z = pz + dz
 
             if not is_wall(new_x, new_z):
-                    player_pos = [new_x, py, new_z]  
+                player_pos = [new_x, py, new_z]
 
-        elif key == GLUT_KEY_RIGHT:  #move player right
+        elif key == GLUT_KEY_RIGHT:  # Move player right
             dx = math.sin(angle) * speed  
             dz = -math.cos(angle) * speed  
 
@@ -251,9 +323,9 @@ def specialKeyListener(key, x, y):
             new_z = pz + dz
 
             if not is_wall(new_x, new_z):
-                    player_pos = [new_x, py, new_z] 
+                player_pos = [new_x, py, new_z]
 
-        elif key == GLUT_KEY_LEFT:  #move player left
+        elif key == GLUT_KEY_LEFT:  # Move player left
             dx = -math.sin(angle) * speed
             dz = math.cos(angle) * speed 
 
@@ -261,15 +333,15 @@ def specialKeyListener(key, x, y):
             new_z = pz + dz
 
             if not is_wall(new_x, new_z):
-                    player_pos = [new_x, py, new_z]  # Update player position
+                player_pos = [new_x, py, new_z]
 
-    px, py, pz = player_pos 
+    px, py, pz = player_pos
 
 def mouseListener(button, state, x, y):
     if button == GLUT_LEFT_BUTTON and state == GLUT_DOWN: #camera toggle
         pass
 
-    if button == GLUT_RIGHT_BUTTON and state == GLUT_DOWN: #jump over enemy/anyhting - optional
+    if button == GLUT_RIGHT_BUTTON and state == GLUT_DOWN: #jump over enemy/any other function - optional
         pass
 
 
@@ -278,44 +350,63 @@ def set_camera():
               0,0,0,  # Looking towards center
               0, 1, 0)
 
-# def set_camera():  #corrected set_camera() for first and third person mode
-#     global player_pos, player_angle, camera_mode
+def set_camera():  #corrected set_camera() for first and third person mode
+    global player_pos, player_angle, camera_mode
 
-#     px, py, pz = player_pos
+    px, py, pz = player_pos
 
-#     if camera_mode == "third":
-#         distance = 150
-#         height = 200
+    if camera_mode == "third":
+        distance = 150
+        height = 200
 
-#         angle_rad = math.radians(player_angle)
+        angle_rad = math.radians(player_angle)
 
-#         cam_x = px + math.cos(angle_rad) * distance
-#         cam_y = py + height
-#         cam_z = pz + math.sin(angle_rad) * distance
+        cam_x = px + math.cos(angle_rad) * distance
+        cam_y = py + height
+        cam_z = pz + math.sin(angle_rad) * distance
 
-#         gluLookAt(cam_x, cam_y, cam_z,  
-#                   px, py + 50, pz,      
-#                   0, 1, 0)              
+        gluLookAt(cam_x, cam_y, cam_z,  
+                  px, py + 50, pz,      
+                  0, 1, 0)              
 
-#     elif camera_mode == "first":
-#         angle_rad = math.radians(player_angle)
+    elif camera_mode == "first":
+        angle_rad = math.radians(player_angle)
 
-#         eye_x = px
-#         eye_y = py + 50 
-#         eye_z = pz
+        eye_x = px
+        eye_y = py + 50 
+        eye_z = pz
 
-#         look_x = eye_x - math.cos(angle_rad) * 100
-#         look_z = eye_z - math.sin(angle_rad) * 100
+        look_x = eye_x - math.cos(angle_rad) * 100
+        look_z = eye_z - math.sin(angle_rad) * 100
 
-#         gluLookAt(eye_x, eye_y, eye_z,   
-#                   look_x, eye_y, look_z, 
-#                   0, 1, 0)               
+        gluLookAt(eye_x, eye_y, eye_z,   
+                  look_x, eye_y, look_z, 
+                  0, 1, 0)         
+              
+def display_cheat_progress():
+    progress = ''
+    for i, key in enumerate(cheat_sequence):
+        if i < sequence_index:
+            progress += f"[{key}] "
+        else:
+            progress += f"{key} "
+    print(f"Cheat Code Progress: {progress}")
+    return
 
 
-def cheat_mode():
-    pass
+def cheat():
+    global player_pos, skip_wall_collision
+
+    if cheat_mode:
+        if player_pos[1] < 250:   # Gradually raise
+            player_pos[1] += 10    # move up slowly
+        skip_wall_collision = True
+    else:
+        skip_wall_collision = False
+
 
 def idle():
+    cheat()
     glutPostRedisplay()
 
 
@@ -329,16 +420,21 @@ def showScreen():
     draw_border_walls()
     
     # game info text
-    if not game_over:
+    if not game_over and not cheat_ready:
         draw_text(10, 570, f"Player Life Remaining: {life} ")
         draw_text(10, 550, f"Collected Treasure: {collected}")
         draw_text(10, 530, f"Remaining Treasure: {remaining}")
-    else:
+    if game_over:
         draw_text(10, 460, f"Game is Over.")
         draw_text(10, 440, f'Press "R" to RESTART the Game.')
 
+    if cheat_ready and not cheat_mode:
+        draw_text(300, 550, f"You found a mysterious egg! A whisper echoes...")
+        draw_text(300, 525, f"'UP UP DOWN DOWN LEFT RIGHT LEFT RIGHT'")
+
     draw_player()
     draw_cheat_egg()
+    cheat_egg_collision()
     glutSwapBuffers()
 
 def init():
@@ -351,13 +447,14 @@ def init():
 def main():
     glutInit()
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH)
-    glutInitWindowSize(1000, 600)
+    glutInitWindowSize(1000, 580)
     glutInitWindowPosition(250, 0)
     glutCreateWindow(b"Treasure Hunt 3D")
 
     init()
     glutDisplayFunc(showScreen)
-    glutSpecialFunc(specialKeyListener)
+    glutSpecialFunc(specialKeyListener)  # Handles special keys (arrow keys)
+    glutKeyboardFunc(keyboardListener)  # Handles regular key presses
     glutIdleFunc(idle)
 
     glutMainLoop()
