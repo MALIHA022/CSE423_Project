@@ -22,7 +22,12 @@ remaining = 5
 min_bound = (-GRID_SIZE * GRID_LENGTH // 2) + 100
 max_bound = (GRID_SIZE * GRID_LENGTH // 2) - 100
 
+#enemies
 enemies = []
+
+#cheat mode
+cheat_egg_positions = [(-550, 0, 265), (450, 0, 1350), (550, 0, -850), (1180, 0, 500)]
+cheat_egg_pos = list(random.choice(cheat_egg_positions)) 
 
 def draw_text(x, y, text, font = GLUT_BITMAP_HELVETICA_18): # type: ignore
     glColor3f(1,1,1)
@@ -156,11 +161,11 @@ def draw_player():
     glRotatef(player_angle, 0, 0, 1)  
 
     if game_over:
-        glRotatef(90,0,1,0)
+        glRotatef(90, 0, 1, 0)
 
     # Head
-    glColor3f(1, 0, 0)
-    gluSphere(gluNewQuadric(), 50, 10, 10)
+    glColor3f(0, 0, 0)
+    gluSphere(gluNewQuadric(), 30, 10, 10)
 
     glPopMatrix()
 
@@ -168,6 +173,21 @@ def draw_enemy(e):
     pass
 def spawn_enemy():
     pass
+
+def draw_cheat_egg():
+    global cheat_egg_pos
+
+    glPushMatrix()
+    glTranslatef(*cheat_egg_pos)
+
+    glColor3f(0.92, 0.32, 0)
+    glPushMatrix()
+    glTranslatef(0, 0, 40)
+    gluSphere(gluNewQuadric(), 50, 20, 20)
+    glPopMatrix()
+
+    glPopMatrix()
+
 
 def is_wall(x, z):
     offsets = [(-10, 0), (10, 0), (0, -10), (0, 10)]
@@ -318,6 +338,7 @@ def showScreen():
         draw_text(10, 440, f'Press "R" to RESTART the Game.')
 
     draw_player()
+    draw_cheat_egg()
     glutSwapBuffers()
 
 def init():
