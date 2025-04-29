@@ -16,6 +16,39 @@ camera_mode = "third"
 rotate = False
 game_over = False
 
+def draw_player():
+    glPushMatrix()
+    glTranslatef(player_pos[0], player_pos[1], player_pos[2])
+
+    # Rotate the player to match facing angle
+    glRotatef(player_angle, 0, 1, 0)
+
+    # Body - Cube
+    glPushMatrix()
+    glScalef(0.4, 0.6, 0.4)
+    glColor3f(0.2, 0.6, 1.0)  # Blueish
+    glutSolidCube(1.0)
+    glPopMatrix()
+
+    # Head - Sphere
+    glPushMatrix()
+    glTranslatef(0, 0.5, 0)
+    glColor3f(1.0, 0.8, 0.6)  # Skin tone
+    glutSolidSphere(0.2, 20, 20)
+    glPopMatrix()
+
+    # Gun (Optional)
+    glPushMatrix()
+    glTranslatef(0.25, 0.2, 0)
+    glRotatef(90, 0, 1, 0)
+    glScalef(0.1, 0.1, 0.4)
+    glColor3f(0.3, 0.3, 0.3)  # Gray
+    glutSolidCube(1.0)
+    glPopMatrix()
+
+    glPopMatrix()
+
+
 # Player stats
 life = 5
 collected = 0
@@ -164,23 +197,84 @@ def draw_maze():
                 x = (col - len(maze[0]) // 2) * GRID_LENGTH
                 z = (row - len(maze) // 2) * GRID_LENGTH
                 draw_cube(x, 25, z)
-
 def draw_player():
     glPushMatrix()
-    if cheat_mode:
-        glTranslatef(player_pos[0], 100, player_pos[2])
-    else:
-        glTranslatef(player_pos[0], 50, player_pos[2])
-    glRotatef(player_angle, 0, 0, 1)  
 
+    # Set vertical position depending on cheat mode
+    y_pos = 100 if cheat_mode else 50
+    glTranslatef(player_pos[0], y_pos, player_pos[2])
+
+    # Apply rotation for player direction (Z-axis rotation for top-down view)
+    glRotatef(player_angle, 0, 1, 0)
+
+    # Rotate 90° on game over to make player fall sideways (dramatic effect)
     if game_over:
-        glRotatef(90, 0, 1, 0)
+        glRotatef(90, 0, 0, 1)
 
-    # Head
-    glColor3f(0, 0, 0)
-    gluSphere(gluNewQuadric(), 30, 10, 10)
-
+    # === Legs (More human-like, with proper thickness) ===
+    leg_height = 60  # Increased leg height
+    leg_radius = 8  # Increased radius for more proportional thickness
+    glPushMatrix()
+    glTranslatef(10, -leg_height / 2.0, 0)
+    glRotatef(-90, 1, 0, 0)
+    glColor3f(0.0, 0.0, 1.0)
+    gluCylinder(gluNewQuadric(), leg_radius, leg_radius, leg_height, 10, 10)
     glPopMatrix()
+
+    glPushMatrix()
+    glTranslatef(-10, -leg_height / 2.0, 0)
+    glRotatef(-90, 1, 0, 0)
+    glColor3f(0.0, 0.0, 1.0)
+    gluCylinder(gluNewQuadric(), leg_radius, leg_radius, leg_height, 10, 10)
+    glPopMatrix()
+
+    # === Body (More proportional, scaled human torso) ===
+    glPushMatrix()
+    glTranslatef(0, 50, 0)  # Center above legs
+    glScalef(0.8, 1.6, 0.6)  # Proportional scaling for torso
+    glColor3f(85 / 255, 108 / 255, 47 / 255)
+    glutSolidCube(40)  # Slightly smaller cube for torso
+    glPopMatrix()
+
+    # === Head (Proportional, centered above the body) ===
+    glPushMatrix()
+    glTranslatef(0, 100, 0)  # Slightly higher than the torso
+    glColor3f(0.0, 0.0, 0.0)  # Black for head (Could add skin tone or other details)
+    gluSphere(gluNewQuadric(), 18, 20, 20)  # Smaller head proportion
+    glPopMatrix()
+
+    # === Arms (Positioned to hold the gun) ===
+    arm_length = 45  # Appropriate arm length for better positioning
+    arm_radius = 4  # Slightly thinner arms
+    
+    # Right arm (holding the gun)
+    glPushMatrix()
+    glTranslatef(20, 60, 10)  # Adjusted to a more natural holding position
+    glRotatef(-60, 1, 0, 0)  # Slightly bent at the elbow
+    glRotatef(90, 0, 0, 1)  # Rotate so hand can hold gun
+    glColor3f(254 / 255, 223 / 255, 188 / 255)
+    gluCylinder(gluNewQuadric(), arm_radius, arm_radius, arm_length, 10, 10)
+    glPopMatrix()
+
+    # Left arm (supporting or aiming)
+    glPushMatrix()
+    glTranslatef(-20, 60, 10)  # Adjusted for balance and proper holding
+    glRotatef(-30, 1, 0, 0)  # Slight bend in the left arm to support the gun
+    glRotatef(-90, 0, 0, 1)  # Rotate to balance with the right arm
+    glColor3f(254 / 255, 223 / 255, 188 / 255)
+    gluCylinder(gluNewQuadric(), arm_radius, arm_radius, arm_length, 10, 10)
+    glPopMatrix()
+
+    # === Gun (Held in the right and left hand) ===
+    # Position gun carefully between the hands
+    glPushMatrix()
+    glTranslatef(0, 80, 10)  # Position gun between the two arms (adjust for proper placement)
+    glRotatef(1, 1, 0, 0)  # Align gun barrel along the Z-axis
+    glColor3f(192 / 255, 192 / 255, 192 / 255)
+    gluCylinder(gluNewQuadric(), 2, 8, 70, 10, 50)  # Gun proportions (barrel)
+    glPopMatrix()
+
+    glPopMatrix()  # End player drawing
 
 def draw_enemy(e):
     pass
