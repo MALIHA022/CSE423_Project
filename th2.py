@@ -476,6 +476,7 @@ def mouseListener(button, state, x, y):
         else:
             print("Rotate: On")
 
+###################################################3
 def set_camera():
     gluLookAt(camera_pos[0], camera_pos[1], camera_pos[2], 
               0,0,0,   
