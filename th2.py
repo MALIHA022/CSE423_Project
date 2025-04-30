@@ -3,7 +3,7 @@ from OpenGL.GLUT import *
 from OpenGL.GLU import *
 import math
 import random
-diamond_positions = [(0,0,0),(-1000, 50, -1000), (1000, 50, 1000), (-500, 50, 1200), (750, 50, -400), (0, 50, 0)]
+sphere_positions = [(0,0,0),(-1000, 50, -1000), (1000, 50, 1000), (-500, 50, 1200), (750, 50, -400), (0, 50, 0)]
 
 camera_pos = (500, 1600, 0)
 
@@ -147,27 +147,20 @@ def draw_grid(GRID_SIZE):
             glVertex3f(x + GRID_LENGTH, 0, z + GRID_LENGTH)
             glVertex3f(x, 0, z + GRID_LENGTH)
     glEnd()
-def diamondShape(center_x, center_y, size):
-    half_size = size / 2
-    glBegin(GL_POINTS)
-    glVertex2f(center_x, center_y + half_size)  # top
-    glVertex2f(center_x - half_size, center_y)  # left
-    glVertex2f(center_x + half_size, center_y)  # right
-    glVertex2f(center_x, center_y - half_size)  # bottom
-    for i in range(int(half_size)):
-        glVertex2f(center_x - i, center_y + half_size - i)
-    for i in range(int(half_size)):
-        glVertex2f(center_x + i, center_y + half_size - i)
-    for i in range(int(half_size)):
-        glVertex2f(center_x - i, center_y - half_size + i)
-    for i in range(int(half_size)):
-        glVertex2f(center_x + i, center_y - half_size + i)
-    glEnd()
 
+def check_sphere_collection():
+    global collected, remaining, sphere_positions
 
-def draw_all_diamonds():
-    for pos in diamond_positions:
-        diamondShape(*pos)
+    px, py, pz = player_pos
+
+    for pos in sphere_positions[:]:  # copy for safe removal
+        sx, sy, sz = pos
+        if abs(px - sx) < 40 and abs(pz - sz) < 40:
+            sphere_positions.remove(pos)
+            collected += 1
+            remaining -= 1
+            print(f"Sphere collected! Total: {collected}")
+
 def draw_border_walls():
     wall_height = 100
     offset = GRID_LENGTH * GRID_SIZE // 2
@@ -286,16 +279,54 @@ def draw_player():
     gluCylinder(gluNewQuadric(), arm_radius, arm_radius, arm_length, 10, 10)
     glPopMatrix()
 
-    # === Gun (Held in the right and left hand) ===
-    # Position gun carefully between the hands
-    glPushMatrix()
-    glTranslatef(0, 80, 10)  # Position gun between the two arms (adjust for proper placement)
-    glRotatef(1, 1, 0, 0)  # Align gun barrel along the Z-axis
-    glColor3f(192 / 255, 192 / 255, 192 / 255)
-    gluCylinder(gluNewQuadric(), 2, 8, 70, 10, 50)  # Gun proportions (barrel)
-    glPopMatrix()
+ 
+def draw_all_spheres():
+    glColor3f(0.8, 0.2, 0.8)  # Purple spheres
+    for x, y, z in sphere_positions:
+        glPushMatrix()
+        glTranslatef(x, y, z)
+        glutSolidSphere(20, 20, 20)  # radius 20, smooth sphere
+        glPopMatrix()
+def draw_all_spheres():
+    glColor3f(0.8, 0.2, 0.8)  # Purple spheres
+    for x, y, z in sphere_positions:
+        glPushMatrix()
+        glTranslatef(x, y, z)
+        glutSolidSphere(20, 20, 20)  # radius 20, smooth sphere
+        glPopMatrix()
 
-    glPopMatrix()  # End player drawing
+def place_spheres_on_maze(num_spheres=10):
+    global sphere_positions
+    sphere_positions = []
+    walkable_tiles = []
+
+    rows = len(maze)
+    cols = len(maze[0])
+
+    for row in range(rows):
+        for col in range(cols):
+            if maze[row][col] == 0:
+                x = (col - cols // 2) * GRID_LENGTH
+                z = (row - rows // 2) * GRID_LENGTH
+                walkable_tiles.append((x, 20, z))
+
+    sphere_positions = random.sample(walkable_tiles, min(num_spheres, len(walkable_tiles)))
+
+def check_sphere_collection():
+    global player_pos, sphere_positions, collected, remaining
+    px, py, pz = player_pos
+    updated_spheres = []
+
+    for x, y, z in sphere_positions:
+        if abs(px - x) < 40 and abs(pz - z) < 40:
+            collected += 1
+            remaining -= 1
+            print("Collected a treasure sphere!")
+        else:
+            updated_spheres.append((x, y, z))
+
+    sphere_positions = updated_spheres
+
 
 def draw_enemy(e):
     pass
@@ -550,7 +581,8 @@ def showScreen():
     draw_grid(GRID_SIZE)
     draw_maze()
     draw_border_walls()
-    
+    draw_all_spheres()
+
     # game info text
     if not game_over and not cheat_ready:
         draw_text(10, 570, f"Player Life Remaining: {life} ")
@@ -567,7 +599,7 @@ def showScreen():
     draw_player()
     draw_cheat_egg()
     cheat_egg_collision()
-    draw_all_diamonds()
+   
 
     glutSwapBuffers()
 
@@ -586,6 +618,9 @@ def main():
     glutCreateWindow(b"Treasure Hunt 3D")
 
     init()
+
+    place_spheres_on_maze(10)  # Make sure this is here
+
     glutDisplayFunc(showScreen)
     glutSpecialFunc(specialKeyListener)   
     glutKeyboardFunc(keyboardListener)   
@@ -593,6 +628,7 @@ def main():
     glutIdleFunc(idle)
 
     glutMainLoop()
+
 
 if __name__ == "__main__":
     main()
