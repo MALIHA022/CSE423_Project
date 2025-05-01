@@ -7,7 +7,7 @@ import random
 camera_pos = (500, 1600, 0)
 
 GRID_LENGTH = 100  
-GRID_SIZE = 32
+GRID_SIZE = 34
 
 # Game stats
 player_pos = [13 * GRID_LENGTH + (GRID_LENGTH // 2), 0, 12 * GRID_LENGTH + (GRID_LENGTH // 2)]
@@ -35,7 +35,9 @@ sequence_index = 0
 cheat_mode = False
 cheat_ready = False
 egg_visible = True
+cheat_unlocked = False
 skip_wall_collision = False
+
 
 # treasure
 num_spheres=10
@@ -109,7 +111,7 @@ def draw_grid(GRID_SIZE):
     glBegin(GL_QUADS)
     for i in range(GRID_SIZE):
         for j in range(GRID_SIZE):
-            glColor3f(0.85, 0.80, 0.73)
+            glColor3f(0.85, 0.80, 0.73) 
 
             x = (i - GRID_SIZE // 2) * GRID_LENGTH
             z = (j - GRID_SIZE // 2) * GRID_LENGTH
@@ -118,39 +120,6 @@ def draw_grid(GRID_SIZE):
             glVertex3f(x + GRID_LENGTH, 0, z)
             glVertex3f(x + GRID_LENGTH, 0, z + GRID_LENGTH)
             glVertex3f(x, 0, z + GRID_LENGTH)
-    glEnd()
-
-def draw_border_walls():
-    wall_height = 100
-    offset = GRID_LENGTH * GRID_SIZE // 2
-
-    glBegin(GL_QUADS)
-
-    # Back wall (+z)
-    glColor3f(0.03, 0.46, 0.05)
-    glVertex3f(-offset, 0, offset)
-    glVertex3f(offset, 0, offset)
-    glVertex3f(offset, wall_height, offset)
-    glVertex3f(-offset, wall_height, offset)
-
-    # Front wall (-z)
-    glVertex3f(-offset, 0, -offset)
-    glVertex3f(offset, 0, -offset)
-    glVertex3f(offset, wall_height, -offset)
-    glVertex3f(-offset, wall_height, -offset)
-
-    # Left wall (-X)
-    glVertex3f(-offset, 0, -offset)
-    glVertex3f(-offset, 0, offset)
-    glVertex3f(-offset, wall_height, offset)
-    glVertex3f(-offset, wall_height, -offset)
-
-    # Right wall (+X)
-    glVertex3f(offset, 0, -offset)
-    glVertex3f(offset, 0, offset)
-    glVertex3f(offset, wall_height, offset)
-    glVertex3f(offset, wall_height, -offset)
-
     glEnd()
 
 
@@ -170,6 +139,43 @@ def draw_maze():
                 x = (col - len(maze[0]) // 2) * GRID_LENGTH
                 z = (row - len(maze) // 2) * GRID_LENGTH
                 draw_cube(x, 25, z)
+
+def is_wall(x, z):
+    player_radius = 25
+
+    maze_width = len(maze[0]) * GRID_LENGTH
+    maze_height = len(maze) * GRID_LENGTH
+    half_width = maze_width // 2
+    half_height = maze_height // 2
+
+    # boundary in cheat mode
+    if not (-half_width <= x <= half_width and -half_height <= z <= half_height):
+        return True  # Out of bounds
+
+    # skiping inside maze walls
+    if cheat_mode:
+        return False
+
+    # wall collision
+    px_min = x - player_radius
+    px_max = x + player_radius
+    pz_min = z - player_radius
+    pz_max = z + player_radius
+
+    for row in range(len(maze)):
+        for col in range(len(maze[0])):
+            if maze[row][col] == 1:
+                wall_x = (col - len(maze[0]) // 2) * GRID_LENGTH
+                wall_z = (row - len(maze) // 2) * GRID_LENGTH
+                wx_min = wall_x - 50
+                wx_max = wall_x + 50
+                wz_min = wall_z - 50
+                wz_max = wall_z + 50
+
+                if px_max > wx_min and px_min < wx_max and pz_max > wz_min and pz_min < wz_max:
+                    return True
+
+    return False
 
 
 def draw_player():
@@ -322,8 +328,6 @@ def update_enemy_positions():
             enemy["dir"] *= -1  # reverse
 
 
-
-
 def draw_cheat_egg():
     global cheat_egg_pos , egg_visible
     
@@ -342,21 +346,8 @@ def draw_cheat_egg():
     glPopMatrix()
 
 
-def is_wall(x, z):
-    if not cheat_mode:
-        offsets = [(-10, 0), (10, 0), (0, -10), (0, 10)]
-        for dx, dz in offsets:
-            col = int((x + dx + (len(maze[0]) // 2) * GRID_LENGTH) // GRID_LENGTH)
-            row = int((z + dz + (len(maze) // 2) * GRID_LENGTH) // GRID_LENGTH)
-            if 1 <= row < len(maze) and 1 <= col < len(maze[0]):
-                if maze[row][col] == 1:
-                    return True
-            else:
-                return True 
-        return False
-
 def cheat_egg_collision():
-    global cheat_ready, sequence_index, player_pos, cheat_egg_pos
+    global cheat_ready, sequence_index, player_pos, cheat_egg_pos, cheat_unlocked
     px, py, pz = player_pos
     cex, cey, cez = cheat_egg_pos
 
@@ -369,6 +360,7 @@ def cheat_egg_collision():
 
     if collision:
         if not cheat_ready:
+            cheat_unlocked = True
             cheat_ready = True
             print("You found a mysterious egg... A whisper echoes: ↑ ↑ ↓ ↓ ← → ← →")
     
@@ -379,11 +371,18 @@ def cheat_egg_collision():
             print("Went too far from egg.")
 
 def keyboardListener(key, x, y):
+    global cheat_mode, cheat_unlocked
+
     if key == b'r': #restart
         pass
 
     if key == b'p': #pause
         pass
+
+    if key == b'c':
+        if cheat_unlocked:  # Only allow toggling after cheat egg is found
+            cheat_mode = not cheat_mode
+            print("Cheat mode ON" if cheat_mode else "Cheat mode OFF")
 
     if key == b'\x1b': #close game window/ exit game
         pass
@@ -442,8 +441,8 @@ def enemy_collision():
         if distance < 60 and not game_over:
             life -= 1
             print(f"⚠️ Hit by enemy! Life remaining: {life}")
-            enemies.remove(enemy)  # ✅ remove enemy that hit
-            spawn_enemy()   # ✅ add one new enemy
+            enemies.remove(enemy)
+            spawn_enemy() 
             if life <= 0:
                 game_over = True
                 print("💀 Game Over!")
@@ -635,7 +634,6 @@ def showScreen():
     set_camera()
     draw_grid(GRID_SIZE)
     draw_maze()
-    draw_border_walls()
     
     # game info text
     if not game_over and not cheat_ready:
