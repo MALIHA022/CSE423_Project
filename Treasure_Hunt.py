@@ -3,6 +3,11 @@ from OpenGL.GLUT import *
 from OpenGL.GLU import *
 import math
 import random
+import time
+
+last_hit_time = 0
+invincible_duration = 1.0  # seconds of invincibility after getting hit
+goal_achieved = False
 
 camera_pos = (500, 1600, 0)
 
@@ -406,10 +411,13 @@ def draw_treasure():
 
 
 def treasure_collision():
-    global collected, remaining, treasure_positions, player_pos
+    global collected, remaining, treasure_positions, player_pos, goal_achieved
+
+    if game_over or goal_achieved:
+        return
 
     px, _, pz = player_pos
-    py = 100 if cheat_mode else 50  # Match player's actual drawn Y position
+    py = 100 if cheat_mode else 50
 
     new_spheres = []
 
@@ -429,13 +437,24 @@ def treasure_collision():
 
     treasure_positions = new_spheres
 
+    if collected == 10:
+        goal_achieved = True
+        print("🎯 Goal Achieved! All treasures collected.")
+
 
 def enemy_collision():
-    global enemies, player_pos, life, game_over
+    global enemies, player_pos, life, game_over, last_hit_time
+
+    if game_over:
+        return
+
+    now = time.time()
+    if now - last_hit_time < invincible_duration:
+        return  # ⏳ still invincible from last hit
 
     px, py, pz = player_pos
 
-    for enemy in enemies[:]:  # iterate over a copy
+    for enemy in enemies:
         ex, ey, ez = enemy["x"], enemy["y"], enemy["z"]
 
         dx = px - ex
@@ -444,14 +463,16 @@ def enemy_collision():
 
         distance = math.sqrt(dx*dx + dy*dy + dz*dz)
 
-        if distance < 60 and not game_over:
+        if distance < 60:
             life -= 1
+            last_hit_time = now  # ⏰ start cooldown
             print(f"⚠️ Hit by enemy! Life remaining: {life}")
-            enemies.remove(enemy)
-            spawn_enemy() 
+
             if life <= 0:
                 game_over = True
                 print("💀 Game Over!")
+            break  # ✅ Only take 1 hit per enemy per second
+
 
 
 
@@ -467,6 +488,8 @@ def specialKeyListener(key, x, y):
         GLUT_KEY_LEFT: 'LEFT',
         GLUT_KEY_RIGHT: 'RIGHT'
     }
+    if game_over:
+       return
 
     # Handle special keys (arrow keys)
     if key in key_map:
