@@ -40,3 +40,10 @@ Game States:
 1. Win Condition: All 10 treasures collected. Nazah
 2. Lose Condition: Player’s lives reach 0 (disables further movement/collection).
 3. display for score, and collection progress.
+
+################################################################################################
+Bugs need to be fixed:
+1. remove last treasure then return
+2. cheat mode treasure collision
+3. all enemies do not collide with player, recheck and fix their position
+4. enemies are going inside walls, fix thier position

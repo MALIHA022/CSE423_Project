@@ -310,6 +310,7 @@ def check_win_condition():
         return
     
     if collected == 10:
+        goal_achieved == True
         print("All treasure collected!")
         print(f"Total treasure: {collected}")
         print(f"Enemy hit: {5 - life}")
@@ -461,6 +462,7 @@ def enemy_collision():
             if life <= 0:
                 game_over = True
                 print("Game Over!")
+                print(f"Collected Treasure: {collected}" )
             break 
 
 def keyboardListener(key, x, y):
@@ -515,7 +517,10 @@ def keyboardListener(key, x, y):
         glutLeaveMainLoop()
 
 def specialKeyListener(key, x, y):
-    global player_pos, sequence_index, cheat_mode, cheat_ready, egg_visible, camera_mode, player_angle, rotate
+    global player_pos, player_angle,rotate, camera_mode  
+    global sequence_index, cheat_mode, cheat_ready, egg_visible
+    global game_over, goal_achieved
+
     speed = 10
     px, py, pz = player_pos
 
@@ -526,7 +531,7 @@ def specialKeyListener(key, x, y):
         GLUT_KEY_LEFT: 'LEFT',
         GLUT_KEY_RIGHT: 'RIGHT'
     }
-    if game_over:
+    if game_over or goal_achieved:
        return
 
     # Handle special keys (arrow keys)
@@ -688,7 +693,7 @@ def cheat():
 
 
 def idle():
-    if not game_over:
+    if not game_over and not goal_achieved:
         cheat()
         update_enemy_positions()
     if goal_achieved or paused:
@@ -711,8 +716,8 @@ def showScreen():
         draw_text(10, 550, f"Collected Treasure: {collected}")
         draw_text(10, 530, f"Remaining Treasure: {remaining}")
     if game_over:
-        draw_text(10, 460, f"Game is Over.")
-        draw_text(10, 440, f'Press "R" to RESTART the Game.')
+        draw_text(10, 550, f"Game is Over.")
+        draw_text(10, 530, f'Press "R" to RESTART the Game.')
 
     if cheat_ready and not cheat_mode and not paused:
         draw_text(300, 550, f"You found a mysterious egg! A whisper echoes...")
