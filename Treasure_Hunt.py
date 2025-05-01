@@ -7,7 +7,7 @@ import time
 
 last_hit_time = 0
 invincible_duration = 1.0  # seconds of invincibility after getting hit
-
+goal_achieved = False
 
 camera_pos = (500, 1600, 0)
 
@@ -411,15 +411,15 @@ def draw_treasure():
 
 
 def treasure_collision():
-    global collected, remaining, treasure_positions, player_pos
+    global collected, remaining, treasure_positions, player_pos, goal_achieved
+
+    if game_over or goal_achieved:
+        return
 
     px, _, pz = player_pos
-    py = 100 if cheat_mode else 50  # Match player's actual drawn Y position
+    py = 100 if cheat_mode else 50
 
     new_spheres = []
-    if game_over:
-       return
-
 
     for (x, y, z) in treasure_positions:
         dx = px - x
@@ -436,6 +436,10 @@ def treasure_collision():
             new_spheres.append((x, y, z))
 
     treasure_positions = new_spheres
+
+    if collected == 10:
+        goal_achieved = True
+        print("🎯 Goal Achieved! All treasures collected.")
 
 
 def enemy_collision():
