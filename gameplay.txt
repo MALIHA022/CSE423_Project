@@ -12,6 +12,8 @@ Player: Nazah
 1. Constructed using basic shapes (sphere, cylinder, cube).
 2. Starts with 5 lives. If lives reach 0: Game Over.
 3. Collision with enemies reduces 1 life.
+4.enemy create
+5.10 spheres across the maza and collision with them.
 
 Treasures: Moontaha
 1. 6 small random colored spheres placed across the maze:
