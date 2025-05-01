@@ -20,7 +20,7 @@ Treasures:
 4. Collecting a treasure removes it from the map.
 
 Enemies: 
-1. Draw enemy near treasure
+1. Draw enemy near treasure-nazah
 1. One enemy guards each treasure that Moves back and forth along a short patrol path.
 2. Cannot be killed and doesn’t chase the player.
 3. Collision results in player losing a life.
