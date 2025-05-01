@@ -37,7 +37,14 @@ def draw_player():
     glutSolidSphere(0.2, 20, 20)
     glPopMatrix()
 
-
+    # Gun (Optional)
+    glPushMatrix()
+    glTranslatef(0.25, 0.2, 0)
+    glRotatef(90, 0, 1, 0)
+    glScalef(0.1, 0.1, 0.4)
+    glColor3f(0.3, 0.3, 0.3)  # Gray
+    glutSolidCube(1.0)
+    glPopMatrix()
 
     glPopMatrix()
 
@@ -45,7 +52,6 @@ def draw_player():
 # Player stats
 life = 5
 collected = 0
-remaining = 5
 min_bound = (-GRID_SIZE * GRID_LENGTH // 2) + 100
 max_bound = (GRID_SIZE * GRID_LENGTH // 2) - 100
 
@@ -63,7 +69,11 @@ cheat_ready = False
 egg_visible = True
 skip_wall_collision = False
 
-# cheat_egg_pos  = (1500, 50, 1200)
+# treasure
+num_spheres=10
+sphere_positions = [(-300, 30, -800), (-50, 30, -150) ,(900, 30, 900), (1150, 30, 200), (250, 30, 1050),
+     (1400, 30, -300), (-650, 30, 1400), (-1400, 30, 550), (1150, 30, -1500), (-50, 30, -1200)]
+    
 
 def draw_text(x, y, text, font = GLUT_BITMAP_HELVETICA_18): # type: ignore
     glColor3f(1,1,1)
@@ -190,82 +200,123 @@ def draw_maze():
                 x = (col - len(maze[0]) // 2) * GRID_LENGTH
                 z = (row - len(maze) // 2) * GRID_LENGTH
                 draw_cube(x, 25, z)
+
+
 def draw_player():
     glPushMatrix()
-
-    # Set vertical position depending on cheat mode
-    y_pos = 100 if cheat_mode else 50
-    glTranslatef(player_pos[0], y_pos, player_pos[2])
-
-    # Apply rotation for player direction (Z-axis rotation for top-down view)
-    glRotatef(player_angle, 0, 1, 0)
-
-    # Rotate 90° on game over to make player fall sideways (dramatic effect)
-    if game_over:
-        glRotatef(90, 0, 0, 1)
-
-    # === Legs (More human-like, with proper thickness) ===
-    leg_height = 60  # Increased leg height
-    leg_radius = 8  # Increased radius for more proportional thickness
-    glPushMatrix()
-    glTranslatef(10, -leg_height / 2.0, 0)
-    glRotatef(-90, 1, 0, 0)
-    glColor3f(0.0, 0.0, 1.0)
-    gluCylinder(gluNewQuadric(), leg_radius, leg_radius, leg_height, 10, 10)
-    glPopMatrix()
-
-    glPushMatrix()
-    glTranslatef(-10, -leg_height / 2.0, 0)
-    glRotatef(-90, 1, 0, 0)
-    glColor3f(0.0, 0.0, 1.0)
-    gluCylinder(gluNewQuadric(), leg_radius, leg_radius, leg_height, 10, 10)
-    glPopMatrix()
-
-    # === Body (More proportional, scaled human torso) ===
-    glPushMatrix()
-    glTranslatef(0, 50, 0)  # Center above legs
-    glScalef(0.8, 1.6, 0.6)  # Proportional scaling for torso
-    glColor3f(85 / 255, 108 / 255, 47 / 255)
-    glutSolidCube(40)  # Slightly smaller cube for torso
-    glPopMatrix()
-
-    # === Head (Proportional, centered above the body) ===
-    glPushMatrix()
-    glTranslatef(0, 100, 0)  # Slightly higher than the torso
-    glColor3f(0.0, 0.0, 0.0)  # Black for head (Could add skin tone or other details)
-    gluSphere(gluNewQuadric(), 18, 20, 20)  # Smaller head proportion
-    glPopMatrix()
-
-    # === Arms (Positioned to hold the gun) ===
-    arm_length = 45  # Appropriate arm length for better positioning
-    arm_radius = 4  # Slightly thinner arms
     
-    # Right arm (holding the gun)
+    if cheat_mode:
+        glTranslatef(player_pos[0], 100, player_pos[2])
+    else:
+        glTranslatef(player_pos[0], 50, player_pos[2])
+    glRotatef(player_angle+90, 0, 1, 0)  
+
+    if game_over:
+        glRotatef(90, 0, 1, 0)
+
+    # Legs
+    # right leg
     glPushMatrix()
-    glTranslatef(20, 60, 10)  # Adjusted to a more natural holding position
-    glRotatef(-60, 1, 0, 0)  # Slightly bent at the elbow
-    glRotatef(90, 0, 0, 1)  # Rotate so hand can hold gun
-    glColor3f(254 / 255, 223 / 255, 188 / 255)
-    gluCylinder(gluNewQuadric(), arm_radius, arm_radius, arm_length, 10, 10)
+    glTranslatef(10, -30, 0)
+    glRotatef(-90, 1, 0, 0)
+    glColor3f(0.0, 0.0, 1.0)
+    gluCylinder(gluNewQuadric(), 8, 8, 60, 10, 10)
     glPopMatrix()
 
-    # Left arm (supporting or aiming)
+    # left leg
     glPushMatrix()
-    glTranslatef(-20, 60, 10)  # Adjusted for balance and proper holding
-    glRotatef(-30, 1, 0, 0)  # Slight bend in the left arm to support the gun
-    glRotatef(-90, 0, 0, 1)  # Rotate to balance with the right arm
-    glColor3f(254 / 255, 223 / 255, 188 / 255)
-    gluCylinder(gluNewQuadric(), arm_radius, arm_radius, arm_length, 10, 10)
+    glTranslatef(-10, -30, 0)
+    glRotatef(-90, 1, 0, 0)
+    glColor3f(0.0, 0.0, 1.0)
+    gluCylinder(gluNewQuadric(), 8, 8, 60, 10, 10)
     glPopMatrix()
 
+    # Body
+    glPushMatrix()
+    glTranslatef(0, 50, 0) 
+    glScalef(0.8, 1.6, 0.6)  
+    glColor3f(85 / 255, 108 / 255, 47 / 255)
+    glutSolidCube(40) 
+    glPopMatrix()
 
+    # Head 
+    glPushMatrix()
+    glTranslatef(0, 100, 0) 
+    glColor3f(0.0, 0.0, 0.0)  
+    gluSphere(gluNewQuadric(), 18, 20, 20)  
+    glPopMatrix()
 
-    glPopMatrix()  # End player drawing
+    # Arms
+    # Right arm
+    glPushMatrix()
+    glTranslatef(20, 70, -5)  
+    glRotatef(90, 1, 0, 0) 
+    glColor3f(254 / 255, 223 / 255, 188 / 255)
+    gluCylinder(gluNewQuadric(), 4, 4, 45, 10, 10)
+    glPopMatrix()
+
+    # Left arm
+    glPushMatrix()
+    glTranslatef(-20, 70, -5) 
+    glRotatef(90, 1, 0, 0)  
+    glColor3f(254 / 255, 223 / 255, 188 / 255)
+    gluCylinder(gluNewQuadric(), 4, 4, 45, 10, 10)
+    glPopMatrix()
+
+    # === Gun (Held in the right and left hand) ===
+    # Position gun carefully between the hands
+    glPushMatrix()
+    glTranslatef(0, 80, 10)  # Position gun between the two arms (adjust for proper placement)
+    glRotatef(1, 1, 0, 0)  # Align gun barrel along the Z-axis
+    glColor3f(192 / 255, 192 / 255, 192 / 255)
+    gluCylinder(gluNewQuadric(), 2, 8, 70, 10, 50)  # Gun proportions (barrel)
+    glPopMatrix()
 
 def draw_enemy(e):
     pass
 def spawn_enemy():
     pass
+
+ 
+def draw_all_spheres():
+    global sphere_positions
+    glColor3f(0.8, 0.2, 0.8)  # Purple spheres
+    for x, y, z in sphere_positions:
+        glPushMatrix()
+        glTranslatef(x, y, z)
+        gluSphere(gluNewQuadric(), 25, 20, 20)
+        glPopMatrix()
+
+
+def place_spheres_on_maze(num_spheres):
+    global sphere_positions
+    walkable_tiles = []
+
+    rows = len(maze)
+    cols = len(maze[0])
+
+    for row in range(rows):
+        for col in range(cols):
+            if maze[row][col] == 0:
+                x = (col - cols // 2) * GRID_LENGTH
+                z = (row - rows // 2) * GRID_LENGTH
+                walkable_tiles.append((x, 20, z))
+
+def check_sphere_collection():
+    global player_pos, sphere_positions, collected, remaining
+    px, py, pz = player_pos
+    updated_spheres = []
+
+    for x, y, z in sphere_positions:
+        if abs(px - x) < 40 and abs(pz - z) < 40:
+            collected += 1
+            remaining -= 1
+            print("Collected a treasure sphere!")
+        else:
+            updated_spheres.append((x, y, z))
+
+    sphere_positions = updated_spheres
+
 
 def draw_cheat_egg():
     global cheat_egg_pos , egg_visible
@@ -279,7 +330,7 @@ def draw_cheat_egg():
     glColor3f(0.92, 0.32, 0)
     glPushMatrix()
     glTranslatef(0, 0, 40)
-    gluSphere(gluNewQuadric(), 50, 20, 20)
+    gluSphere(gluNewQuadric(), 40, 20, 20)
     glPopMatrix()
 
     glPopMatrix()
@@ -367,7 +418,7 @@ def specialKeyListener(key, x, y):
         
         glutPostRedisplay()
 
-    #normal player movement
+    # normal player movement
     angle_step = 5
     if not game_over:
         angle = math.radians(player_angle)
@@ -404,7 +455,7 @@ def specialKeyListener(key, x, y):
                     player_pos = [new_x, py, new_z]
                 player_angle = 0
             if camera_mode == 'first' or (camera_mode == "third" and rotate == True):
-                player_angle -= angle_step
+                player_angle += angle_step
 
         elif key == GLUT_KEY_LEFT:  # Move player left
             if camera_mode == "third" and rotate == False:
@@ -418,7 +469,7 @@ def specialKeyListener(key, x, y):
                     player_pos = [new_x, py, new_z]
                 player_angle = 0
             if camera_mode == 'first' or (camera_mode == "third" and rotate == True):
-                player_angle += angle_step
+                player_angle -= angle_step
 
     px, py, pz = player_pos
 
@@ -519,7 +570,7 @@ def showScreen():
     if not game_over and not cheat_ready:
         draw_text(10, 570, f"Player Life Remaining: {life} ")
         draw_text(10, 550, f"Collected Treasure: {collected}")
-        draw_text(10, 530, f"Remaining Treasure: {remaining}")
+        draw_text(10, 530, f"Remaining Treasure: {num_spheres - collected}")
     if game_over:
         draw_text(10, 460, f"Game is Over.")
         draw_text(10, 440, f'Press "R" to RESTART the Game.')
@@ -531,6 +582,7 @@ def showScreen():
     draw_player()
     draw_cheat_egg()
     cheat_egg_collision()
+    draw_all_spheres()
     glutSwapBuffers()
 
 def init():

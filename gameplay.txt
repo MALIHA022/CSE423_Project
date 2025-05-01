@@ -1,25 +1,26 @@
 Gameplay:
-1. Player explores a 3D maze built using cubes.
+1. Player explores a 3D maze built using cubes. Done
 2. Movement system- arrow keys movement.  Maliha - Done
 3. Camera toggle between first-person and third-person views with mouse left button click. Maliha - Done
 4. Player rotation toggle with mouse right button click.  Maliha - Done
     - Player can always rotate in first person mode.  Done
     - Rotation toggle is used in third person mode    Done
-5. Objective: Collect all 5 unique colored treasures and reach the goal.
+5. Objective: Collect all 10 unique colored treasures and reach the goal.
 6. A red bonus treasure unlocks cheat mode when a secret key combo is triggered. the game can be completed even without triggering the cheat mode 
 
-Player: Nazah
-1. Constructed using basic shapes (sphere, cylinder, cube).
+Player:
+1. Constructed using basic shapes (sphere, cylinder, cube). Nazah - Done
 2. Starts with 5 lives. If lives reach 0: Game Over.
 3. Collision with enemies reduces 1 life.
 
-Treasures: Moontaha
-1. 6 small random colored spheres placed across the maze:
-2. 5 standard treasures and 1 special sphere (bonus treasure, player can win even without collecting it, collecting triggers cheat mode).
-3. Treasures are placed in random locations and each treasure is guarded by a patrolling enemy.
+Treasures:
+1. 10 small random colored spheres placed across the maze: Nazah - Done
+2. 10 standard treasures and 1 special sphere (bonus treasure, player can win even without collecting it, collecting triggers cheat mode).
+3. Treasures are placed in listed locations and each treasure is guarded by a patrolling enemy.
 4. Collecting a treasure removes it from the map.
 
-Enemies: Moontaha
+Enemies: 
+1. Draw enemy near treasure
 1. One enemy guards each treasure that Moves back and forth along a short patrol path.
 2. Cannot be killed and doesn’t chase the player.
 3. Collision results in player losing a life.
@@ -31,11 +32,11 @@ Cheat Mode: Maliha - Done
 
 Visual Design:
 1. Game platform and Maze walls:  Cubes arranged from a 2D maze array.  Maliha - Done
-2. Treasures: Small colored spheres, visually distinct. Moontaha
-3. Enemies: Pulsing spheres Moontaha
-4. Player: Built using sphere, cube and cylinder. Nazah
+2. Treasures: Small colored spheres, visually distinct. Nazah
+3. Enemies: Pulsing spheres     Moontaha
+4. Player: Built using sphere, cube and cylinder.  Nazah - Done
 
-Game States: Maliha
+Game States: 
 1. Win Condition: All 5 treasures collected and player reaches goal.
 2. Lose Condition: Player’s lives reach 0 (disables further movement/collection).
-3. display for timer, score, and collection progress.
+3. display for score, and collection progress.
