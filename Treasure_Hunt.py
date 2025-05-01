@@ -300,9 +300,6 @@ def spawn_enemy():
             }
             enemies.append(enemy)
 
-# def check_win_condition():
-#     global collected, player_pos, game_over
-
 def check_win_condition():
     global collected, life, player_pos, game_over, goal_achieved
 
@@ -453,7 +450,10 @@ def treasure_collision():
         return
 
     px, _, pz = player_pos
-    py = 100 if cheat_mode else 50
+    if cheat_mode:
+        py = 100
+    else:
+        py = 50
 
     new_spheres = []
 
@@ -479,16 +479,16 @@ def treasure_collision():
 
 
 def enemy_collision():
-    global enemies, player_pos, life, game_over, last_hit_time
+    global enemies, player_pos, life, game_over, last_hit_time, goal_achieved
 
-    if game_over:
+    if game_over or goal_achieved or cheat_mode:
         return
 
     now = time.time()
     if now - last_hit_time < invincible_duration:
         return 
 
-    px, py, pz = player_pos
+    px, py, pz = player_pos[0], 50, player_pos[2]
 
     for enemy in enemies:
         ex, ey, ez = enemy["x"], enemy["y"], enemy["z"]
@@ -508,9 +508,6 @@ def enemy_collision():
                 game_over = True
                 print("Game Over!")
             break 
-
-
-
 
 def specialKeyListener(key, x, y):
     global player_pos, sequence_index, cheat_mode, cheat_ready, egg_visible, camera_mode, player_angle, rotate
@@ -689,6 +686,8 @@ def idle():
     if not game_over or not paused:
         cheat()
         update_enemy_positions()
+    if goal_achieved:
+        return
     glutPostRedisplay()
 
 
