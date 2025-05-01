@@ -5,9 +5,6 @@ import math
 import random
 import time
 
-last_hit_time = 0
-invincible_duration = 1.0  # seconds of invincibility after getting hit
-goal_achieved = False
 
 camera_pos = (500, 1600, 0)
 
@@ -20,6 +17,8 @@ player_angle = 0
 camera_mode = "third"  
 rotate = False
 game_over = False
+start_time = 0
+
 
 # Player stats
 life = 5
@@ -30,6 +29,8 @@ max_bound = (GRID_SIZE * GRID_LENGTH // 2) - 100
 #enemies
 enemies = []
 enemy_count = 5
+last_hit_time = 0
+invincible_duration = 1.0  
 
 #cheat mode
 egg_visible = True
@@ -47,10 +48,11 @@ skip_wall_collision = False
 # treasure
 num_spheres=10
 treasure_positions = [(-950, 30, -700), (-50, 30, -150), (900, 30, 900), (1150, 30, 200), (250, 30, 1050),
-                      (1400, 30, -300), (-650, 30, 1400), (-1400, 30, 550), (1150, 30, -1500), (-50, 30, -1200)
-]
+                      (1400, 30, -300), (-650, 30, 1400), (-1400, 30, 550), (1150, 30, -1500), (-50, 30, -1200)]
 remaining = len(treasure_positions)
 
+#goal
+goal_achieved = False
    
 
 def draw_text(x, y, text, font = GLUT_BITMAP_HELVETICA_18): # type: ignore
@@ -193,8 +195,8 @@ def draw_player():
         glTranslatef(player_pos[0], 50, player_pos[2])
     glRotatef(player_angle+90, 0, 1, 0)  
 
-    if game_over:
-        glRotatef(90, 0, 1, 0)
+    if game_over: #player lies down when game over
+        glRotatef(90, 1, 0, 0)
 
     # Legs
     # right leg
@@ -301,16 +303,16 @@ def spawn_enemy():
 # def check_win_condition():
 #     global collected, player_pos, game_over
 
-#     if collected < 10 or game_over:
-#         return
+def check_win_condition():
+    global collected, life, player_pos, game_over, goal_achieved
 
-#     px, py, pz = player_pos
-#     gx, gy, gz = goal_position
-
-#     dist = math.sqrt((px - gx)**2 + (pz - gz)**2)
-#     if dist < goal_radius:
-#         print("🎉 You Win! All treasures collected and goal reached!")
-#         game_over = True
+    if game_over or goal_achieved:
+        return
+    
+    if collected == 10:
+        print("All treasure collected!")
+        print(f"Total treasure: {collected}")
+        print(f"Enemy hit: {5 - life}")
 
 
 def update_enemy_positions():
@@ -378,17 +380,42 @@ def cheat_egg_collision():
 
 def keyboardListener(key, x, y):
     global cheat_mode, cheat_unlocked
+    global game_over, life, collected, remaining, treasure_positions
+    global player_pos, enemies, cheat_ready, sequence_index
+    global player_angle, camera_mode, goal_achieved, last_hit_time
+    global cheat_egg_pos, egg_visible
 
-    if key == b'r': #restart
-        pass
+    if key == b'r':  # restart
+        game_over = False
+        treasure_positions = [(-950, 30, -700), (-50, 30, -150), (900, 30, 900), (1150, 30, 200), (250, 30, 1050),
+                              (1400, 30, -300), (-650, 30, 1400), (-1400, 30, 550), (1150, 30, -1500), (-50, 30, -1200)]
+        
+        life = 5
+        collected = 0
+        remaining = len(treasure_positions)
+        
+        player_pos = [13 * GRID_LENGTH + (GRID_LENGTH // 2), 0, 12 * GRID_LENGTH + (GRID_LENGTH // 2)]
+        player_angle = 0
+        camera_mode = "third"
+        goal_achieved = False
+        last_hit_time = 0
+ 
+        cheat_mode = False
+        cheat_ready = False
+        sequence_index = 0
+        cheat_unlocked = False
+        cheat_egg_pos = list(random.choice(cheat_egg_positions))
+        egg_visible = True
 
-    if key == b'p': #pause
-        pass
+        print("Game restarted.")
 
     if key == b'c':
         if cheat_unlocked:  # Only allow toggling after cheat egg is found
             cheat_mode = not cheat_mode
-            print("Cheat mode ON" if cheat_mode else "Cheat mode OFF")
+            if cheat_mode:
+                print("Cheat mode ON")
+            else:
+                print("Cheat mode OFF")
 
     if key == b'\x1b': #close game window/ exit game
         pass
@@ -592,38 +619,38 @@ def set_camera():
               0,0,0,   
               0, 1, 0)
 
-def set_camera():  #corrected set_camera() for first and third person mode
-    global player_pos, player_angle, camera_mode
+# def set_camera():  #corrected set_camera() for first and third person mode
+#     global player_pos, player_angle, camera_mode
 
-    px, py, pz = player_pos
+#     px, py, pz = player_pos
 
-    if camera_mode == "third":
-        distance = 150
-        height = 200
+#     if camera_mode == "third":
+#         distance = 150
+#         height = 200
 
-        angle_rad = math.radians(player_angle)
+#         angle_rad = math.radians(player_angle)
 
-        cam_x = px + math.cos(angle_rad) * distance
-        cam_y = py + height
-        cam_z = pz + math.sin(angle_rad) * distance
+#         cam_x = px + math.cos(angle_rad) * distance
+#         cam_y = py + height
+#         cam_z = pz + math.sin(angle_rad) * distance
 
-        gluLookAt(cam_x, cam_y, cam_z,  
-                  px, py + 50, pz,      
-                  0, 1, 0)              
+#         gluLookAt(cam_x, cam_y, cam_z,  
+#                   px, py + 50, pz,      
+#                   0, 1, 0)              
 
-    elif camera_mode == "first":
-        angle_rad = math.radians(player_angle)
+#     elif camera_mode == "first":
+#         angle_rad = math.radians(player_angle)
 
-        eye_x = px
-        eye_y = py + 120 
-        eye_z = pz
+#         eye_x = px
+#         eye_y = py + 120 
+#         eye_z = pz
 
-        look_x = eye_x - math.cos(angle_rad) * 100
-        look_z = eye_z - math.sin(angle_rad) * 100
+#         look_x = eye_x - math.cos(angle_rad) * 100
+#         look_z = eye_z - math.sin(angle_rad) * 100
 
-        gluLookAt(eye_x, eye_y, eye_z,   
-                  look_x, eye_y, look_z, 
-                  0, 1, 0)         
+#         gluLookAt(eye_x, eye_y, eye_z,   
+#                   look_x, eye_y, look_z, 
+#                   0, 1, 0)         
 
 
 
@@ -650,8 +677,9 @@ def cheat():
 
 
 def idle():
-    cheat()
-    update_enemy_positions()
+    if not game_over:
+        cheat()
+        update_enemy_positions()
     glutPostRedisplay()
 
 
