@@ -5,13 +5,9 @@ import math
 import random
 
 camera_pos = (500, 1600, 0)
-enemy_count = 5
 
 GRID_LENGTH = 100  
 GRID_SIZE = 32
-
-enemies = []
-enemy_count = 5
 
 # Game stats
 player_pos = [13 * GRID_LENGTH + (GRID_LENGTH // 2), 0, 12 * GRID_LENGTH + (GRID_LENGTH // 2)]
@@ -20,43 +16,15 @@ camera_mode = "third"
 rotate = False
 game_over = False
 
-def draw_player():
-    glPushMatrix()
-    glTranslatef(player_pos[0], player_pos[1], player_pos[2])
-
-    # Rotate the player to match facing angle
-    glRotatef(player_angle, 0, 1, 0)
-
-    # Body - Cube
-    glPushMatrix()
-    glScalef(0.4, 0.6, 0.4)
-    glColor3f(0.2, 0.6, 1.0)  # Blueish
-    glutSolidCube(1.0)
-    glPopMatrix()
-
-    # Head - Sphere
-    glPushMatrix()
-    glTranslatef(0, 0.5, 0)
-    glColor3f(1.0, 0.8, 0.6)  # Skin tone
-    glutSolidSphere(0.2, 20, 20)
-    glPopMatrix()
-
-
-
-    glPopMatrix()
-
-goal_position = (1550, 0, 1550)  # adjust as needed for your maze layout
-goal_radius = 100
-
 # Player stats
 life = 5
 collected = 0
-remaining = 10
 min_bound = (-GRID_SIZE * GRID_LENGTH // 2) + 100
 max_bound = (GRID_SIZE * GRID_LENGTH // 2) - 100
 
 #enemies
 enemies = []
+enemy_count = 5
 
 #cheat mode
 egg_visible = True
@@ -69,7 +37,13 @@ cheat_ready = False
 egg_visible = True
 skip_wall_collision = False
 
-# cheat_egg_pos  = (1500, 50, 1200)
+# treasure
+num_spheres=10
+treasure_positions = [(-300, 30, -800), (-50, 30, -150) ,(900, 30, 900), (1150, 30, 200), (250, 30, 1050),
+     (1400, 30, -300), (-650, 30, 1400), (-1400, 30, 550), (1150, 30, -1500), (-50, 30, -1200)]
+remaining = len(treasure_positions)
+
+   
 
 def draw_text(x, y, text, font = GLUT_BITMAP_HELVETICA_18): # type: ignore
     glColor3f(1,1,1)
@@ -180,7 +154,7 @@ def draw_border_walls():
     glEnd()
 
 
-def draw_cube(x, y, z, size=100):
+def draw_cube(x, y, z, size=100): #maze walls
     half = size / 2
     glPushMatrix()
     glTranslatef(x, y, z)
@@ -196,89 +170,82 @@ def draw_maze():
                 x = (col - len(maze[0]) // 2) * GRID_LENGTH
                 z = (row - len(maze) // 2) * GRID_LENGTH
                 draw_cube(x, 25, z)
+
+
 def draw_player():
     glPushMatrix()
-
-    # Set vertical position depending on cheat mode
-    y_pos = 100 if cheat_mode else 50
-    glTranslatef(player_pos[0], y_pos, player_pos[2])
-
-    # Apply rotation for player direction (Z-axis rotation for top-down view)
-    glRotatef(player_angle, 0, 1, 0)
-
-    # Rotate 90° on game over to make player fall sideways (dramatic effect)
-    if game_over:
-        glRotatef(90, 0, 0, 1)
-
-    # === Legs (More human-like, with proper thickness) ===
-    leg_height = 60  # Increased leg height
-    leg_radius = 8  # Increased radius for more proportional thickness
-    glPushMatrix()
-    glTranslatef(10, -leg_height / 2.0, 0)
-    glRotatef(-90, 1, 0, 0)
-    glColor3f(0.0, 0.0, 1.0)
-    gluCylinder(gluNewQuadric(), leg_radius, leg_radius, leg_height, 10, 10)
-    glPopMatrix()
-
-    glPushMatrix()
-    glTranslatef(-10, -leg_height / 2.0, 0)
-    glRotatef(-90, 1, 0, 0)
-    glColor3f(0.0, 0.0, 1.0)
-    gluCylinder(gluNewQuadric(), leg_radius, leg_radius, leg_height, 10, 10)
-    glPopMatrix()
-
-    # === Body (More proportional, scaled human torso) ===
-    glPushMatrix()
-    glTranslatef(0, 50, 0)  # Center above legs
-    glScalef(0.8, 1.6, 0.6)  # Proportional scaling for torso
-    glColor3f(85 / 255, 108 / 255, 47 / 255)
-    glutSolidCube(40)  # Slightly smaller cube for torso
-    glPopMatrix()
-
-    # === Head (Proportional, centered above the body) ===
-    glPushMatrix()
-    glTranslatef(0, 100, 0)  # Slightly higher than the torso
-    glColor3f(0.0, 0.0, 0.0)  # Black for head (Could add skin tone or other details)
-    gluSphere(gluNewQuadric(), 18, 20, 20)  # Smaller head proportion
-    glPopMatrix()
-
-    # === Arms (Positioned to hold the gun) ===
-    arm_length = 45  # Appropriate arm length for better positioning
-    arm_radius = 4  # Slightly thinner arms
     
-    # Right arm (holding the gun)
+    if cheat_mode:
+        glTranslatef(player_pos[0], 100, player_pos[2])
+    else:
+        glTranslatef(player_pos[0], 50, player_pos[2])
+    glRotatef(player_angle+90, 0, 1, 0)  
+
+    if game_over:
+        glRotatef(90, 0, 1, 0)
+
+    # Legs
+    # right leg
     glPushMatrix()
-    glTranslatef(20, 60, 10)  # Adjusted to a more natural holding position
-    glRotatef(-60, 1, 0, 0)  # Slightly bent at the elbow
-    glRotatef(90, 0, 0, 1)  # Rotate so hand can hold gun
-    glColor3f(254 / 255, 223 / 255, 188 / 255)
-    gluCylinder(gluNewQuadric(), arm_radius, arm_radius, arm_length, 10, 10)
+    glTranslatef(10, -30, 0)
+    glRotatef(-90, 1, 0, 0)
+    glColor3f(0.0, 0.0, 1.0)
+    gluCylinder(gluNewQuadric(), 8, 8, 60, 10, 10)
     glPopMatrix()
 
-    # Left arm (supporting or aiming)
+    # left leg
     glPushMatrix()
-    glTranslatef(-20, 60, 10)  # Adjusted for balance and proper holding
-    glRotatef(-30, 1, 0, 0)  # Slight bend in the left arm to support the gun
-    glRotatef(-90, 0, 0, 1)  # Rotate to balance with the right arm
-    glColor3f(254 / 255, 223 / 255, 188 / 255)
-    gluCylinder(gluNewQuadric(), arm_radius, arm_radius, arm_length, 10, 10)
+    glTranslatef(-10, -30, 0)
+    glRotatef(-90, 1, 0, 0)
+    glColor3f(0.0, 0.0, 1.0)
+    gluCylinder(gluNewQuadric(), 8, 8, 60, 10, 10)
     glPopMatrix()
 
+    # Body
+    glPushMatrix()
+    glTranslatef(0, 50, 0) 
+    glScalef(0.8, 1.6, 0.6)  
+    glColor3f(0.2, 0.6, 1.0)  # Blueish
+    glutSolidCube(40) 
+    glPopMatrix()
 
+    # Head 
+    glPushMatrix()
+    glTranslatef(0, 100, 0) 
+    glColor3f(0.0, 0.0, 0.0)  
+    gluSphere(gluNewQuadric(), 18, 20, 20)  
+    glPopMatrix()
 
-    glPopMatrix()  # End player drawing
+    # Arms
+    # Right arm
+    glPushMatrix()
+    glTranslatef(20, 70, -5)  
+    glRotatef(90, 1, 0, 0) 
+    glColor3f(254 / 255, 223 / 255, 188 / 255)
+    gluCylinder(gluNewQuadric(), 4, 4, 45, 10, 10)
+    glPopMatrix()
+
+    # Left arm
+    glPushMatrix()
+    glTranslatef(-20, 70, -5) 
+    glRotatef(90, 1, 0, 0)  
+    glColor3f(254 / 255, 223 / 255, 188 / 255)
+    gluCylinder(gluNewQuadric(), 4, 4, 45, 10, 10)
+    glPopMatrix()
+
+    glPopMatrix() 
 
 def draw_enemy(e):
     glPushMatrix()
     glTranslatef(e["x"], e["y"], e["z"])
     glScalef(e["scale"], e["scale"], e["scale"])
 
-    # Body sphere (red)
+    # Body 
     glColor3f(1, 0, 0)
     gluSphere(gluNewQuadric(), 30, 20, 20)
 
-    # Head sphere (black) - draw it ABOVE the body, not in front
-    glTranslatef(0, 40, 0)  # ← move up instead of forward
+    # Head 
+    glTranslatef(0, 40, 0)  
     glColor3f(0, 0, 0)
     gluSphere(gluNewQuadric(), 20, 20, 20)
 
@@ -290,7 +257,7 @@ def spawn_enemy():
     enemies = []
 
     # Your original intended positions
-    sphere_positions = [
+    enemy_positions = [
         (-350, 50, -700), 
         (-80, 50, -130), 
         (600, 90, 700), 
@@ -303,7 +270,7 @@ def spawn_enemy():
         (-80, 50, -1300)
     ]
 
-    for x, y, z in sphere_positions:
+    for x, y, z in enemy_positions:
         # Convert world coordinates to maze coordinates
         col = int((x + (len(maze[0]) // 2) * GRID_LENGTH) // GRID_LENGTH)
         row = int((z + (len(maze) // 2) * GRID_LENGTH) // GRID_LENGTH)
@@ -321,19 +288,19 @@ def spawn_enemy():
             }
             enemies.append(enemy)
 
-def check_win_condition():
-    global collected, player_pos, game_over
+# def check_win_condition():
+#     global collected, player_pos, game_over
 
-    if collected < 10 or game_over:
-        return
+#     if collected < 10 or game_over:
+#         return
 
-    px, py, pz = player_pos
-    gx, gy, gz = goal_position
+#     px, py, pz = player_pos
+#     gx, gy, gz = goal_position
 
-    dist = math.sqrt((px - gx)**2 + (pz - gz)**2)
-    if dist < goal_radius:
-        print("🎉 You Win! All treasures collected and goal reached!")
-        game_over = True
+#     dist = math.sqrt((px - gx)**2 + (pz - gz)**2)
+#     if dist < goal_radius:
+#         print("🎉 You Win! All treasures collected and goal reached!")
+#         game_over = True
 
 
 def update_enemy_positions():
@@ -422,32 +389,67 @@ def keyboardListener(key, x, y):
 
     if key == b'\x1b': #close game window/ exit game
         pass
-# Orange spheres
-orange_sphere_positions = []
-for _ in range(10):
-    while True:
-        row = random.randint(0, len(maze)-1)
-        col = random.randint(0, len(maze[0])-1)
-        if maze[row][col] == 0:
-            x = (col - len(maze[0]) // 2) * GRID_LENGTH + GRID_LENGTH // 2
-            z = (row - len(maze) // 2) * GRID_LENGTH + GRID_LENGTH // 2
-            orange_sphere_positions.append((x, 50, z))
-            break
 
 
-def generate_orange_spheres():
-    global orange_sphere_positions, remaining
-    orange_sphere_positions = [(-300, 30, -800), (-50, 30, -150) ,(900, 30, 900), (1150, 30, 200), (250, 30, 1050),
-     (1400, 30, -300), (-650, 30, 1400), (-1400, 30, 550), (1150, 30, -1500), (-50, 30, -1200)]
-    remaining = len(orange_sphere_positions)
-
-def draw_orange_spheres():
-    for pos in orange_sphere_positions:
+# Treasure
+def draw_treasure():
+    global treasure_positions
+    glColor3f(1.0, 0.5, 0.0) #orange
+    for x, y, z in treasure_positions:
         glPushMatrix()
-        glTranslatef(*pos)
-        glColor3f(1.0, 0.5, 0.0)  # Orange
-        glutSolidSphere(30, 20, 20)
+        if cheat_mode:
+            glTranslatef(x, y+70, z)
+        else:
+            glTranslatef(x, y, z)
+        gluSphere(gluNewQuadric(), 25, 20, 20)
         glPopMatrix()
+
+
+def treasure_collision():
+    global collected, remaining, treasure_positions, player_pos
+
+    px, py, pz = player_pos
+    new_spheres = []
+
+    for (x, y, z) in treasure_positions:
+        dx = px - x
+        dy = py - y
+        dz = pz - z
+
+        distance = math.sqrt(dx * dx + dy * dy + dz * dz)
+
+        if distance < 60:  # radius of player + sphere
+            collected += 1
+            remaining -= 1
+            print(f"Treasure collected! Total: {collected}")
+        else:
+            new_spheres.append((x, y, z))
+
+    treasure_positions = new_spheres
+
+def enemy_collision():
+    global enemies, player_pos, life, game_over
+
+    px, py, pz = player_pos
+
+    for enemy in enemies[:]:  # iterate over a copy
+        ex, ey, ez = enemy["x"], enemy["y"], enemy["z"]
+
+        dx = px - ex
+        dy = py - ey
+        dz = pz - ez
+
+        distance = math.sqrt(dx*dx + dy*dy + dz*dz)
+
+        if distance < 60 and not game_over:
+            life -= 1
+            print(f"⚠️ Hit by enemy! Life remaining: {life}")
+            enemies.remove(enemy)  # ✅ remove enemy that hit
+            spawn_enemy()   # ✅ add one new enemy
+            if life <= 0:
+                game_over = True
+                print("💀 Game Over!")
+
 
 
 def specialKeyListener(key, x, y):
@@ -596,50 +598,6 @@ def set_camera():
 #         gluLookAt(eye_x, eye_y, eye_z,   
 #                   look_x, eye_y, look_z, 
 #                   0, 1, 0)         
-def orange_sphere_collision():
-    global collected, remaining, orange_sphere_positions, player_pos
-
-    px, py, pz = player_pos
-    new_spheres = []
-
-    for (x, y, z) in orange_sphere_positions:
-        dx = px - x
-        dy = py - y
-        dz = pz - z
-
-        distance = math.sqrt(dx * dx + dy * dy + dz * dz)
-
-        if distance < 60:  # radius of player + sphere
-            collected += 1
-            remaining -= 1
-            print(f"Treasure collected! Total: {collected}")
-        else:
-            new_spheres.append((x, y, z))
-
-    orange_sphere_positions = new_spheres
-def enemy_collision():
-    global enemies, player_pos, life, game_over
-
-    px, py, pz = player_pos
-
-    for enemy in enemies[:]:  # iterate over a copy
-        ex, ey, ez = enemy["x"], enemy["y"], enemy["z"]
-
-        dx = px - ex
-        dy = py - ey
-        dz = pz - ez
-
-        distance = math.sqrt(dx*dx + dy*dy + dz*dz)
-
-        if distance < 60 and not game_over:
-            life -= 1
-            print(f"⚠️ Hit by enemy! Life remaining: {life}")
-            enemies.remove(enemy)  # ✅ remove enemy that hit
-            spawn_enemy()   # ✅ add one new enemy
-            if life <= 0:
-                game_over = True
-                print("💀 Game Over!")
-
 
 
 
@@ -697,15 +655,13 @@ def showScreen():
     draw_player()
     draw_cheat_egg()
     cheat_egg_collision()
-    draw_orange_spheres()
-    orange_sphere_collision()
+    draw_treasure()
+    treasure_collision()
+
     for enemy in enemies:
         draw_enemy(enemy)
     enemy_collision()
   
-
-
-
     glutSwapBuffers()
 
 def init():
@@ -723,7 +679,6 @@ def main():
     glutCreateWindow(b"Treasure Hunt 3D")
 
     init()
-    generate_orange_spheres()  # <== Add this line
     enemies = [spawn_enemy() for _ in range(enemy_count)]
 
 
