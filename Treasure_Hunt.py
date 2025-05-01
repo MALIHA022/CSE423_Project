@@ -16,39 +16,6 @@ camera_mode = "third"
 rotate = False
 game_over = False
 
-def draw_player():
-    glPushMatrix()
-    glTranslatef(player_pos[0], player_pos[1], player_pos[2])
-
-    # Rotate the player to match facing angle
-    glRotatef(player_angle, 0, 1, 0)
-
-    # Body - Cube
-    glPushMatrix()
-    glScalef(0.4, 0.6, 0.4)
-    glColor3f(0.2, 0.6, 1.0)  # Blueish
-    glutSolidCube(1.0)
-    glPopMatrix()
-
-    # Head - Sphere
-    glPushMatrix()
-    glTranslatef(0, 0.5, 0)
-    glColor3f(1.0, 0.8, 0.6)  # Skin tone
-    glutSolidSphere(0.2, 20, 20)
-    glPopMatrix()
-
-    # Gun (Optional)
-    glPushMatrix()
-    glTranslatef(0.25, 0.2, 0)
-    glRotatef(90, 0, 1, 0)
-    glScalef(0.1, 0.1, 0.4)
-    glColor3f(0.3, 0.3, 0.3)  # Gray
-    glutSolidCube(1.0)
-    glPopMatrix()
-
-    glPopMatrix()
-
-
 # Player stats
 life = 5
 collected = 0
@@ -70,7 +37,6 @@ cheat_ready = False
 egg_visible = True
 skip_wall_collision = False
 
-# cheat_egg_pos  = (1500, 50, 1200)
 
 def draw_text(x, y, text, font = GLUT_BITMAP_HELVETICA_18): # type: ignore
     glColor3f(1,1,1)
@@ -197,84 +163,70 @@ def draw_maze():
                 x = (col - len(maze[0]) // 2) * GRID_LENGTH
                 z = (row - len(maze) // 2) * GRID_LENGTH
                 draw_cube(x, 25, z)
+
+
 def draw_player():
     glPushMatrix()
-
-    # Set vertical position depending on cheat mode
-    y_pos = 100 if cheat_mode else 50
-    glTranslatef(player_pos[0], y_pos, player_pos[2])
-
-    # Apply rotation for player direction (Z-axis rotation for top-down view)
-    glRotatef(player_angle, 0, 1, 0)
-
-    # Rotate 90° on game over to make player fall sideways (dramatic effect)
-    if game_over:
-        glRotatef(90, 0, 0, 1)
-
-    # === Legs (More human-like, with proper thickness) ===
-    leg_height = 60  # Increased leg height
-    leg_radius = 8  # Increased radius for more proportional thickness
-    glPushMatrix()
-    glTranslatef(10, -leg_height / 2.0, 0)
-    glRotatef(-90, 1, 0, 0)
-    glColor3f(0.0, 0.0, 1.0)
-    gluCylinder(gluNewQuadric(), leg_radius, leg_radius, leg_height, 10, 10)
-    glPopMatrix()
-
-    glPushMatrix()
-    glTranslatef(-10, -leg_height / 2.0, 0)
-    glRotatef(-90, 1, 0, 0)
-    glColor3f(0.0, 0.0, 1.0)
-    gluCylinder(gluNewQuadric(), leg_radius, leg_radius, leg_height, 10, 10)
-    glPopMatrix()
-
-    # === Body (More proportional, scaled human torso) ===
-    glPushMatrix()
-    glTranslatef(0, 50, 0)  # Center above legs
-    glScalef(0.8, 1.6, 0.6)  # Proportional scaling for torso
-    glColor3f(85 / 255, 108 / 255, 47 / 255)
-    glutSolidCube(40)  # Slightly smaller cube for torso
-    glPopMatrix()
-
-    # === Head (Proportional, centered above the body) ===
-    glPushMatrix()
-    glTranslatef(0, 100, 0)  # Slightly higher than the torso
-    glColor3f(0.0, 0.0, 0.0)  # Black for head (Could add skin tone or other details)
-    gluSphere(gluNewQuadric(), 18, 20, 20)  # Smaller head proportion
-    glPopMatrix()
-
-    # === Arms (Positioned to hold the gun) ===
-    arm_length = 45  # Appropriate arm length for better positioning
-    arm_radius = 4  # Slightly thinner arms
     
-    # Right arm (holding the gun)
+    if cheat_mode:
+        glTranslatef(player_pos[0], 100, player_pos[2])
+    else:
+        glTranslatef(player_pos[0], 50, player_pos[2])
+    glRotatef(player_angle+90, 0, 1, 0)  
+
+    if game_over:
+        glRotatef(90, 0, 1, 0)
+
+    # Legs
+    # right leg
     glPushMatrix()
-    glTranslatef(20, 60, 10)  # Adjusted to a more natural holding position
-    glRotatef(-60, 1, 0, 0)  # Slightly bent at the elbow
-    glRotatef(90, 0, 0, 1)  # Rotate so hand can hold gun
+    glTranslatef(10, -30, 0)
+    glRotatef(-90, 1, 0, 0)
+    glColor3f(0.0, 0.0, 1.0)
+    gluCylinder(gluNewQuadric(), 8, 8, 60, 10, 10)
+    glPopMatrix()
+
+    # left leg
+    glPushMatrix()
+    glTranslatef(-10, -30, 0)
+    glRotatef(-90, 1, 0, 0)
+    glColor3f(0.0, 0.0, 1.0)
+    gluCylinder(gluNewQuadric(), 8, 8, 60, 10, 10)
+    glPopMatrix()
+
+    # Body
+    glPushMatrix()
+    glTranslatef(0, 50, 0) 
+    glScalef(0.8, 1.6, 0.6)  
+    glColor3f(85 / 255, 108 / 255, 47 / 255)
+    glutSolidCube(40) 
+    glPopMatrix()
+
+    # Head 
+    glPushMatrix()
+    glTranslatef(0, 100, 0) 
+    glColor3f(0.0, 0.0, 0.0)  
+    gluSphere(gluNewQuadric(), 18, 20, 20)  
+    glPopMatrix()
+
+    # Arms
+    # Right arm
+    glPushMatrix()
+    glTranslatef(20, 70, -5)  
+    glRotatef(90, 1, 0, 0) 
     glColor3f(254 / 255, 223 / 255, 188 / 255)
-    gluCylinder(gluNewQuadric(), arm_radius, arm_radius, arm_length, 10, 10)
+    gluCylinder(gluNewQuadric(), 4, 4, 45, 10, 10)
     glPopMatrix()
 
-    # Left arm (supporting or aiming)
+    # Left arm
     glPushMatrix()
-    glTranslatef(-20, 60, 10)  # Adjusted for balance and proper holding
-    glRotatef(-30, 1, 0, 0)  # Slight bend in the left arm to support the gun
-    glRotatef(-90, 0, 0, 1)  # Rotate to balance with the right arm
+    glTranslatef(-20, 70, -5) 
+    glRotatef(90, 1, 0, 0)  
     glColor3f(254 / 255, 223 / 255, 188 / 255)
-    gluCylinder(gluNewQuadric(), arm_radius, arm_radius, arm_length, 10, 10)
+    gluCylinder(gluNewQuadric(), 4, 4, 45, 10, 10)
     glPopMatrix()
 
-    # === Gun (Held in the right and left hand) ===
-    # Position gun carefully between the hands
-    glPushMatrix()
-    glTranslatef(0, 80, 10)  # Position gun between the two arms (adjust for proper placement)
-    glRotatef(1, 1, 0, 0)  # Align gun barrel along the Z-axis
-    glColor3f(192 / 255, 192 / 255, 192 / 255)
-    gluCylinder(gluNewQuadric(), 2, 8, 70, 10, 50)  # Gun proportions (barrel)
-    glPopMatrix()
-
-    glPopMatrix()  # End player drawing
+    glPopMatrix() 
 
 def draw_enemy(e):
     pass
@@ -381,7 +333,7 @@ def specialKeyListener(key, x, y):
         
         glutPostRedisplay()
 
-    #normal player movement
+    # normal player movement
     angle_step = 5
     if not game_over:
         angle = math.radians(player_angle)
@@ -418,7 +370,7 @@ def specialKeyListener(key, x, y):
                     player_pos = [new_x, py, new_z]
                 player_angle = 0
             if camera_mode == 'first' or (camera_mode == "third" and rotate == True):
-                player_angle -= angle_step
+                player_angle += angle_step
 
         elif key == GLUT_KEY_LEFT:  # Move player left
             if camera_mode == "third" and rotate == False:
@@ -432,7 +384,7 @@ def specialKeyListener(key, x, y):
                     player_pos = [new_x, py, new_z]
                 player_angle = 0
             if camera_mode == 'first' or (camera_mode == "third" and rotate == True):
-                player_angle += angle_step
+                player_angle -= angle_step
 
     px, py, pz = player_pos
 
@@ -460,38 +412,38 @@ def set_camera():
               0,0,0,   
               0, 1, 0)
 
-# def set_camera():  #corrected set_camera() for first and third person mode
-#     global player_pos, player_angle, camera_mode
+def set_camera():  #corrected set_camera() for first and third person mode
+    global player_pos, player_angle, camera_mode
 
-#     px, py, pz = player_pos
+    px, py, pz = player_pos
 
-#     if camera_mode == "third":
-#         distance = 150
-#         height = 200
+    if camera_mode == "third":
+        distance = 150
+        height = 200
 
-#         angle_rad = math.radians(player_angle)
+        angle_rad = math.radians(player_angle)
 
-#         cam_x = px + math.cos(angle_rad) * distance
-#         cam_y = py + height
-#         cam_z = pz + math.sin(angle_rad) * distance
+        cam_x = px + math.cos(angle_rad) * distance
+        cam_y = py + height
+        cam_z = pz + math.sin(angle_rad) * distance
 
-#         gluLookAt(cam_x, cam_y, cam_z,  
-#                   px, py + 50, pz,      
-#                   0, 1, 0)              
+        gluLookAt(cam_x, cam_y, cam_z,  
+                  px, py + 50, pz,      
+                  0, 1, 0)              
 
-#     elif camera_mode == "first":
-#         angle_rad = math.radians(player_angle)
+    elif camera_mode == "first":
+        angle_rad = math.radians(player_angle)
 
-#         eye_x = px
-#         eye_y = py + 120 
-#         eye_z = pz
+        eye_x = px
+        eye_y = py + 120 
+        eye_z = pz
 
-#         look_x = eye_x - math.cos(angle_rad) * 100
-#         look_z = eye_z - math.sin(angle_rad) * 100
+        look_x = eye_x - math.cos(angle_rad) * 100
+        look_z = eye_z - math.sin(angle_rad) * 100
 
-#         gluLookAt(eye_x, eye_y, eye_z,   
-#                   look_x, eye_y, look_z, 
-#                   0, 1, 0)         
+        gluLookAt(eye_x, eye_y, eye_z,   
+                  look_x, eye_y, look_z, 
+                  0, 1, 0)         
               
 def display_cheat_progress():
     progress = ''

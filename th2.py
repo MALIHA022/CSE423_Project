@@ -278,6 +278,8 @@ def draw_player():
     glColor3f(254 / 255, 223 / 255, 188 / 255)
     gluCylinder(gluNewQuadric(), arm_radius, arm_radius, arm_length, 10, 10)
     glPopMatrix()
+    
+    glPopMatrix()
 
  
 def draw_all_spheres():
