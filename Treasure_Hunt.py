@@ -37,14 +37,7 @@ def draw_player():
     glutSolidSphere(0.2, 20, 20)
     glPopMatrix()
 
-    # Gun (Optional)
-    glPushMatrix()
-    glTranslatef(0.25, 0.2, 0)
-    glRotatef(90, 0, 1, 0)
-    glScalef(0.1, 0.1, 0.4)
-    glColor3f(0.3, 0.3, 0.3)  # Gray
-    glutSolidCube(1.0)
-    glPopMatrix()
+
 
     glPopMatrix()
 
@@ -265,14 +258,7 @@ def draw_player():
     gluCylinder(gluNewQuadric(), arm_radius, arm_radius, arm_length, 10, 10)
     glPopMatrix()
 
-    # === Gun (Held in the right and left hand) ===
-    # Position gun carefully between the hands
-    glPushMatrix()
-    glTranslatef(0, 80, 10)  # Position gun between the two arms (adjust for proper placement)
-    glRotatef(1, 1, 0, 0)  # Align gun barrel along the Z-axis
-    glColor3f(192 / 255, 192 / 255, 192 / 255)
-    gluCylinder(gluNewQuadric(), 2, 8, 70, 10, 50)  # Gun proportions (barrel)
-    glPopMatrix()
+
 
     glPopMatrix()  # End player drawing
 
@@ -460,38 +446,38 @@ def set_camera():
               0,0,0,   
               0, 1, 0)
 
-# def set_camera():  #corrected set_camera() for first and third person mode
-#     global player_pos, player_angle, camera_mode
+def set_camera():  #corrected set_camera() for first and third person mode
+    global player_pos, player_angle, camera_mode
 
-#     px, py, pz = player_pos
+    px, py, pz = player_pos
 
-#     if camera_mode == "third":
-#         distance = 150
-#         height = 200
+    if camera_mode == "third":
+        distance = 150
+        height = 200
 
-#         angle_rad = math.radians(player_angle)
+        angle_rad = math.radians(player_angle)
 
-#         cam_x = px + math.cos(angle_rad) * distance
-#         cam_y = py + height
-#         cam_z = pz + math.sin(angle_rad) * distance
+        cam_x = px + math.cos(angle_rad) * distance
+        cam_y = py + height
+        cam_z = pz + math.sin(angle_rad) * distance
 
-#         gluLookAt(cam_x, cam_y, cam_z,  
-#                   px, py + 50, pz,      
-#                   0, 1, 0)              
+        gluLookAt(cam_x, cam_y, cam_z,  
+                  px, py + 50, pz,      
+                  0, 1, 0)              
 
-#     elif camera_mode == "first":
-#         angle_rad = math.radians(player_angle)
+    elif camera_mode == "first":
+        angle_rad = math.radians(player_angle)
 
-#         eye_x = px
-#         eye_y = py + 120 
-#         eye_z = pz
+        eye_x = px
+        eye_y = py + 120 
+        eye_z = pz
 
-#         look_x = eye_x - math.cos(angle_rad) * 100
-#         look_z = eye_z - math.sin(angle_rad) * 100
+        look_x = eye_x - math.cos(angle_rad) * 100
+        look_z = eye_z - math.sin(angle_rad) * 100
 
-#         gluLookAt(eye_x, eye_y, eye_z,   
-#                   look_x, eye_y, look_z, 
-#                   0, 1, 0)         
+        gluLookAt(eye_x, eye_y, eye_z,   
+                  look_x, eye_y, look_z, 
+                  0, 1, 0)         
               
 def display_cheat_progress():
     progress = ''
