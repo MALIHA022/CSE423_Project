@@ -147,19 +147,7 @@ def draw_grid(GRID_SIZE):
             glVertex3f(x + GRID_LENGTH, 0, z + GRID_LENGTH)
             glVertex3f(x, 0, z + GRID_LENGTH)
     glEnd()
-
-def check_sphere_collection():
-    global collected, remaining, sphere_positions
-
-    px, py, pz = player_pos
-
-    for pos in sphere_positions[:]:  # copy for safe removal
-        sx, sy, sz = pos
-        if abs(px - sx) < 40 and abs(pz - sz) < 40:
-            sphere_positions.remove(pos)
-            collected += 1
-            remaining -= 1
-            print(f"Sphere collected! Total: {collected}")
+    
 
 def draw_border_walls():
     wall_height = 100
@@ -287,14 +275,7 @@ def draw_all_spheres():
     for x, y, z in sphere_positions:
         glPushMatrix()
         glTranslatef(x, y, z)
-        glutSolidSphere(20, 20, 20)  # radius 20, smooth sphere
-        glPopMatrix()
-def draw_all_spheres():
-    glColor3f(0.8, 0.2, 0.8)  # Purple spheres
-    for x, y, z in sphere_positions:
-        glPushMatrix()
-        glTranslatef(x, y, z)
-        glutSolidSphere(20, 20, 20)  # radius 20, smooth sphere
+        gluSphere(gluNewQuadric(), 25, 20, 20)
         glPopMatrix()
 
 def place_spheres_on_maze(num_spheres=10):
@@ -312,7 +293,10 @@ def place_spheres_on_maze(num_spheres=10):
                 z = (row - rows // 2) * GRID_LENGTH
                 walkable_tiles.append((x, 20, z))
 
-    sphere_positions = random.sample(walkable_tiles, min(num_spheres, len(walkable_tiles)))
+    # sphere_positions = random.sample(walkable_tiles, min(num_spheres, len(walkable_tiles)))
+    sphere_positions = [(-300, 300, -800),  (-50, 30, -150) ,(900, 30, 900), (1150, 30, 200), (250, 30, 1050),
+     (1400, 30, -300), (-650, 30, 1400), (-1400, 30, 550), (1150, 30, -1500), (-50, 30, -1200)]
+    
 
 def check_sphere_collection():
     global player_pos, sphere_positions, collected, remaining
@@ -515,38 +499,38 @@ def set_camera():
               0,0,0,   
               0, 1, 0)
 
-def set_camera():  #corrected set_camera() for first and third person mode
-    global player_pos, player_angle, camera_mode
+# def set_camera():  #corrected set_camera() for first and third person mode
+#     global player_pos, player_angle, camera_mode
 
-    px, py, pz = player_pos
+#     px, py, pz = player_pos
 
-    if camera_mode == "third":
-        distance = 150
-        height = 200
+#     if camera_mode == "third":
+#         distance = 150
+#         height = 200
 
-        angle_rad = math.radians(player_angle)
+#         angle_rad = math.radians(player_angle)
 
-        cam_x = px + math.cos(angle_rad) * distance
-        cam_y = py + height
-        cam_z = pz + math.sin(angle_rad) * distance
+#         cam_x = px + math.cos(angle_rad) * distance
+#         cam_y = py + height
+#         cam_z = pz + math.sin(angle_rad) * distance
 
-        gluLookAt(cam_x, cam_y, cam_z,  
-                  px, py + 50, pz,      
-                  0, 1, 0)              
+#         gluLookAt(cam_x, cam_y, cam_z,  
+#                   px, py + 50, pz,      
+#                   0, 1, 0)              
 
-    elif camera_mode == "first":
-        angle_rad = math.radians(player_angle)
+#     elif camera_mode == "first":
+#         angle_rad = math.radians(player_angle)
 
-        eye_x = px
-        eye_y = py + 120 
-        eye_z = pz
+#         eye_x = px
+#         eye_y = py + 120 
+#         eye_z = pz
 
-        look_x = eye_x - math.cos(angle_rad) * 100
-        look_z = eye_z - math.sin(angle_rad) * 100
+#         look_x = eye_x - math.cos(angle_rad) * 100
+#         look_z = eye_z - math.sin(angle_rad) * 100
 
-        gluLookAt(eye_x, eye_y, eye_z,   
-                  look_x, eye_y, look_z, 
-                  0, 1, 0)         
+#         gluLookAt(eye_x, eye_y, eye_z,   
+#                   look_x, eye_y, look_z, 
+#                   0, 1, 0)         
               
 def display_cheat_progress():
     progress = ''

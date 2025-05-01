@@ -19,7 +19,6 @@ game_over = False
 # Player stats
 life = 5
 collected = 0
-remaining = 5
 min_bound = (-GRID_SIZE * GRID_LENGTH // 2) + 100
 max_bound = (GRID_SIZE * GRID_LENGTH // 2) - 100
 
@@ -37,6 +36,11 @@ cheat_ready = False
 egg_visible = True
 skip_wall_collision = False
 
+# treasure
+num_spheres=10
+sphere_positions = [(-300, 30, -800), (-50, 30, -150) ,(900, 30, 900), (1150, 30, 200), (250, 30, 1050),
+     (1400, 30, -300), (-650, 30, 1400), (-1400, 30, 550), (1150, 30, -1500), (-50, 30, -1200)]
+    
 
 def draw_text(x, y, text, font = GLUT_BITMAP_HELVETICA_18): # type: ignore
     glColor3f(1,1,1)
@@ -233,6 +237,47 @@ def draw_enemy(e):
 def spawn_enemy():
     pass
 
+ 
+def draw_all_spheres():
+    global sphere_positions
+    glColor3f(0.8, 0.2, 0.8)  # Purple spheres
+    for x, y, z in sphere_positions:
+        glPushMatrix()
+        glTranslatef(x, y, z)
+        gluSphere(gluNewQuadric(), 25, 20, 20)
+        glPopMatrix()
+
+
+def place_spheres_on_maze(num_spheres):
+    global sphere_positions
+    walkable_tiles = []
+
+    rows = len(maze)
+    cols = len(maze[0])
+
+    for row in range(rows):
+        for col in range(cols):
+            if maze[row][col] == 0:
+                x = (col - cols // 2) * GRID_LENGTH
+                z = (row - rows // 2) * GRID_LENGTH
+                walkable_tiles.append((x, 20, z))
+
+def check_sphere_collection():
+    global player_pos, sphere_positions, collected, remaining
+    px, py, pz = player_pos
+    updated_spheres = []
+
+    for x, y, z in sphere_positions:
+        if abs(px - x) < 40 and abs(pz - z) < 40:
+            collected += 1
+            remaining -= 1
+            print("Collected a treasure sphere!")
+        else:
+            updated_spheres.append((x, y, z))
+
+    sphere_positions = updated_spheres
+
+
 def draw_cheat_egg():
     global cheat_egg_pos , egg_visible
     
@@ -245,7 +290,7 @@ def draw_cheat_egg():
     glColor3f(0.92, 0.32, 0)
     glPushMatrix()
     glTranslatef(0, 0, 40)
-    gluSphere(gluNewQuadric(), 50, 20, 20)
+    gluSphere(gluNewQuadric(), 40, 20, 20)
     glPopMatrix()
 
     glPopMatrix()
@@ -412,38 +457,38 @@ def set_camera():
               0,0,0,   
               0, 1, 0)
 
-def set_camera():  #corrected set_camera() for first and third person mode
-    global player_pos, player_angle, camera_mode
+# def set_camera():  #corrected set_camera() for first and third person mode
+#     global player_pos, player_angle, camera_mode
 
-    px, py, pz = player_pos
+#     px, py, pz = player_pos
 
-    if camera_mode == "third":
-        distance = 150
-        height = 200
+#     if camera_mode == "third":
+#         distance = 150
+#         height = 200
 
-        angle_rad = math.radians(player_angle)
+#         angle_rad = math.radians(player_angle)
 
-        cam_x = px + math.cos(angle_rad) * distance
-        cam_y = py + height
-        cam_z = pz + math.sin(angle_rad) * distance
+#         cam_x = px + math.cos(angle_rad) * distance
+#         cam_y = py + height
+#         cam_z = pz + math.sin(angle_rad) * distance
 
-        gluLookAt(cam_x, cam_y, cam_z,  
-                  px, py + 50, pz,      
-                  0, 1, 0)              
+#         gluLookAt(cam_x, cam_y, cam_z,  
+#                   px, py + 50, pz,      
+#                   0, 1, 0)              
 
-    elif camera_mode == "first":
-        angle_rad = math.radians(player_angle)
+#     elif camera_mode == "first":
+#         angle_rad = math.radians(player_angle)
 
-        eye_x = px
-        eye_y = py + 120 
-        eye_z = pz
+#         eye_x = px
+#         eye_y = py + 120 
+#         eye_z = pz
 
-        look_x = eye_x - math.cos(angle_rad) * 100
-        look_z = eye_z - math.sin(angle_rad) * 100
+#         look_x = eye_x - math.cos(angle_rad) * 100
+#         look_z = eye_z - math.sin(angle_rad) * 100
 
-        gluLookAt(eye_x, eye_y, eye_z,   
-                  look_x, eye_y, look_z, 
-                  0, 1, 0)         
+#         gluLookAt(eye_x, eye_y, eye_z,   
+#                   look_x, eye_y, look_z, 
+#                   0, 1, 0)         
               
 def display_cheat_progress():
     progress = ''
@@ -485,7 +530,7 @@ def showScreen():
     if not game_over and not cheat_ready:
         draw_text(10, 570, f"Player Life Remaining: {life} ")
         draw_text(10, 550, f"Collected Treasure: {collected}")
-        draw_text(10, 530, f"Remaining Treasure: {remaining}")
+        draw_text(10, 530, f"Remaining Treasure: {num_spheres - collected}")
     if game_over:
         draw_text(10, 460, f"Game is Over.")
         draw_text(10, 440, f'Press "R" to RESTART the Game.')
@@ -497,6 +542,7 @@ def showScreen():
     draw_player()
     draw_cheat_egg()
     cheat_egg_collision()
+    draw_all_spheres()
     glutSwapBuffers()
 
 def init():
