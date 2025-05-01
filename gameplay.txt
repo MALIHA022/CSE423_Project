@@ -5,8 +5,8 @@ Gameplay:
 4. Player rotation toggle with mouse right button click.  Maliha - Done
     - Player can always rotate in first person mode.  Done
     - Rotation toggle is used in third person mode    Done
-5. Objective: Collect all 10 unique colored treasures and reach the goal.
-6. A red bonus treasure unlocks cheat mode when a secret key combo is triggered. the game can be completed even without triggering the cheat mode 
+5. Objective: Collect all 10 unique colored treasures and reach the goal. Nazah
+6. A red bonus treasure unlocks cheat mode when a secret key combo is triggered. the game can be completed even without triggering the cheat mode Maliha - Done
 
 Player:
 1. Constructed using basic shapes (sphere, cylinder, cube). Nazah - Done
@@ -20,7 +20,7 @@ Treasures:
 4. Collecting a treasure removes it from the map.
 
 Enemies: 
-1. Draw enemy near treasure
+1. Draw enemy near treasure-nazah
 1. One enemy guards each treasure that Moves back and forth along a short patrol path.
 2. Cannot be killed and doesn’t chase the player.
 3. Collision results in player losing a life.
@@ -32,11 +32,11 @@ Cheat Mode: Maliha - Done
 
 Visual Design:
 1. Game platform and Maze walls:  Cubes arranged from a 2D maze array.  Maliha - Done
-2. Treasures: Small colored spheres, visually distinct. Nazah
-3. Enemies: Pulsing spheres     Moontaha
+2. Treasures: Small colored spheres, visually distinct. Nazah -Done
+3. Enemies: Patroling spheres     Nazah
 4. Player: Built using sphere, cube and cylinder.  Nazah - Done
 
 Game States: 
-1. Win Condition: All 5 treasures collected and player reaches goal.
+1. Win Condition: All 10 treasures collected. Nazah
 2. Lose Condition: Player’s lives reach 0 (disables further movement/collection).
 3. display for score, and collection progress.
