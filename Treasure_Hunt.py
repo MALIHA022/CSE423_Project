@@ -17,7 +17,7 @@ player_angle = 0
 camera_mode = "third"  
 rotate = False
 game_over = False
-start_time = 0
+paused = False
 
 
 # Player stats
@@ -188,7 +188,7 @@ def is_wall(x, z):
 
 def draw_player():
     glPushMatrix()
-    
+
     if cheat_mode:
         glTranslatef(player_pos[0], 100, player_pos[2])
     else:
@@ -380,7 +380,7 @@ def cheat_egg_collision():
 
 def keyboardListener(key, x, y):
     global cheat_mode, cheat_unlocked
-    global game_over, life, collected, remaining, treasure_positions
+    global game_over, life, collected, remaining, treasure_positions, paused
     global player_pos, enemies, cheat_ready, sequence_index
     global player_angle, camera_mode, goal_achieved, last_hit_time
     global cheat_egg_pos, egg_visible
@@ -416,9 +416,18 @@ def keyboardListener(key, x, y):
                 print("Cheat mode ON")
             else:
                 print("Cheat mode OFF")
+    
+    if key == b'p': #pause
+        if not game_over:
+            paused = not paused
+        
+        if paused:
+            print("Game paused!")
+        else:
+            print("Game Resumed")
 
     if key == b'\x1b': #close game window/ exit game
-        pass
+        glutLeaveMainLoop()
 
 
 # Treasure
@@ -466,7 +475,7 @@ def treasure_collision():
 
     if collected == 10:
         goal_achieved = True
-        print("🎯 Goal Achieved! All treasures collected.")
+        print("Goal Achieved! All treasures collected.")
 
 
 def enemy_collision():
@@ -477,7 +486,7 @@ def enemy_collision():
 
     now = time.time()
     if now - last_hit_time < invincible_duration:
-        return  # ⏳ still invincible from last hit
+        return 
 
     px, py, pz = player_pos
 
@@ -492,13 +501,13 @@ def enemy_collision():
 
         if distance < 60:
             life -= 1
-            last_hit_time = now  # ⏰ start cooldown
-            print(f"⚠️ Hit by enemy! Life remaining: {life}")
+            last_hit_time = now  # start cooldown
+            print(f"Hit by enemy! Life remaining: {life}")
 
             if life <= 0:
                 game_over = True
-                print("💀 Game Over!")
-            break  # ✅ Only take 1 hit per enemy per second
+                print("Game Over!")
+            break 
 
 
 
@@ -619,38 +628,38 @@ def set_camera():
               0,0,0,   
               0, 1, 0)
 
-# def set_camera():  #corrected set_camera() for first and third person mode
-#     global player_pos, player_angle, camera_mode
+def set_camera():  #corrected set_camera() for first and third person mode
+    global player_pos, player_angle, camera_mode
 
-#     px, py, pz = player_pos
+    px, py, pz = player_pos
 
-#     if camera_mode == "third":
-#         distance = 150
-#         height = 200
+    if camera_mode == "third":
+        distance = 150
+        height = 200
 
-#         angle_rad = math.radians(player_angle)
+        angle_rad = math.radians(player_angle)
 
-#         cam_x = px + math.cos(angle_rad) * distance
-#         cam_y = py + height
-#         cam_z = pz + math.sin(angle_rad) * distance
+        cam_x = px + math.cos(angle_rad) * distance
+        cam_y = py + height
+        cam_z = pz + math.sin(angle_rad) * distance
 
-#         gluLookAt(cam_x, cam_y, cam_z,  
-#                   px, py + 50, pz,      
-#                   0, 1, 0)              
+        gluLookAt(cam_x, cam_y, cam_z,  
+                  px, py + 50, pz,      
+                  0, 1, 0)              
 
-#     elif camera_mode == "first":
-#         angle_rad = math.radians(player_angle)
+    elif camera_mode == "first":
+        angle_rad = math.radians(player_angle)
 
-#         eye_x = px
-#         eye_y = py + 120 
-#         eye_z = pz
+        eye_x = px
+        eye_y = py + 120 
+        eye_z = pz
 
-#         look_x = eye_x - math.cos(angle_rad) * 100
-#         look_z = eye_z - math.sin(angle_rad) * 100
+        look_x = eye_x - math.cos(angle_rad) * 100
+        look_z = eye_z - math.sin(angle_rad) * 100
 
-#         gluLookAt(eye_x, eye_y, eye_z,   
-#                   look_x, eye_y, look_z, 
-#                   0, 1, 0)         
+        gluLookAt(eye_x, eye_y, eye_z,   
+                  look_x, eye_y, look_z, 
+                  0, 1, 0)         
 
 
 
@@ -677,7 +686,7 @@ def cheat():
 
 
 def idle():
-    if not game_over:
+    if not game_over or not paused:
         cheat()
         update_enemy_positions()
     glutPostRedisplay()
@@ -701,9 +710,11 @@ def showScreen():
         draw_text(10, 460, f"Game is Over.")
         draw_text(10, 440, f'Press "R" to RESTART the Game.')
 
-    if cheat_ready and not cheat_mode:
+    if cheat_ready and not cheat_mode and not paused:
         draw_text(300, 550, f"You found a mysterious egg! A whisper echoes...")
         draw_text(300, 525, f"'UP UP DOWN DOWN LEFT RIGHT LEFT RIGHT'")
+    if paused:
+        draw_text(350, 520, "Game Paused. Press 'P' to Resume.")
 
     draw_player()
     draw_cheat_egg()
