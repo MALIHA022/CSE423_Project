@@ -41,8 +41,9 @@ skip_wall_collision = False
 
 # treasure
 num_spheres=10
-treasure_positions = [(-300, 30, -800), (-50, 30, -150) ,(900, 30, 900), (1150, 30, 200), (250, 30, 1050),
-     (1400, 30, -300), (-650, 30, 1400), (-1400, 30, 550), (1150, 30, -1500), (-50, 30, -1200)]
+treasure_positions = [(-950, 30, -700), (-50, 30, -150), (900, 30, 900), (1150, 30, 200), (250, 30, 1050),
+                      (1400, 30, -300), (-650, 30, 1400), (-1400, 30, 550), (1150, 30, -1500), (-50, 30, -1200)
+]
 remaining = len(treasure_positions)
 
    
@@ -391,21 +392,25 @@ def keyboardListener(key, x, y):
 # Treasure
 def draw_treasure():
     global treasure_positions
-    glColor3f(1.0, 0.5, 0.0) #orange
+    glColor3f(1.0, 0.5, 0.0)  # orange
     for x, y, z in treasure_positions:
         glPushMatrix()
         if cheat_mode:
-            glTranslatef(x, y+70, z)
+            glTranslatef(x, 100, z)
         else:
             glTranslatef(x, y, z)
+
         gluSphere(gluNewQuadric(), 25, 20, 20)
         glPopMatrix()
+
 
 
 def treasure_collision():
     global collected, remaining, treasure_positions, player_pos
 
-    px, py, pz = player_pos
+    px, _, pz = player_pos
+    py = 100 if cheat_mode else 50  # Match player's actual drawn Y position
+
     new_spheres = []
 
     for (x, y, z) in treasure_positions:
@@ -415,7 +420,7 @@ def treasure_collision():
 
         distance = math.sqrt(dx * dx + dy * dy + dz * dz)
 
-        if distance < 60:  # radius of player + sphere
+        if distance < 60:
             collected += 1
             remaining -= 1
             print(f"Treasure collected! Total: {collected}")
@@ -423,6 +428,7 @@ def treasure_collision():
             new_spheres.append((x, y, z))
 
     treasure_positions = new_spheres
+
 
 def enemy_collision():
     global enemies, player_pos, life, game_over
@@ -563,38 +569,38 @@ def set_camera():
               0,0,0,   
               0, 1, 0)
 
-# def set_camera():  #corrected set_camera() for first and third person mode
-#     global player_pos, player_angle, camera_mode
+def set_camera():  #corrected set_camera() for first and third person mode
+    global player_pos, player_angle, camera_mode
 
-#     px, py, pz = player_pos
+    px, py, pz = player_pos
 
-#     if camera_mode == "third":
-#         distance = 150
-#         height = 200
+    if camera_mode == "third":
+        distance = 150
+        height = 200
 
-#         angle_rad = math.radians(player_angle)
+        angle_rad = math.radians(player_angle)
 
-#         cam_x = px + math.cos(angle_rad) * distance
-#         cam_y = py + height
-#         cam_z = pz + math.sin(angle_rad) * distance
+        cam_x = px + math.cos(angle_rad) * distance
+        cam_y = py + height
+        cam_z = pz + math.sin(angle_rad) * distance
 
-#         gluLookAt(cam_x, cam_y, cam_z,  
-#                   px, py + 50, pz,      
-#                   0, 1, 0)              
+        gluLookAt(cam_x, cam_y, cam_z,  
+                  px, py + 50, pz,      
+                  0, 1, 0)              
 
-#     elif camera_mode == "first":
-#         angle_rad = math.radians(player_angle)
+    elif camera_mode == "first":
+        angle_rad = math.radians(player_angle)
 
-#         eye_x = px
-#         eye_y = py + 120 
-#         eye_z = pz
+        eye_x = px
+        eye_y = py + 120 
+        eye_z = pz
 
-#         look_x = eye_x - math.cos(angle_rad) * 100
-#         look_z = eye_z - math.sin(angle_rad) * 100
+        look_x = eye_x - math.cos(angle_rad) * 100
+        look_z = eye_z - math.sin(angle_rad) * 100
 
-#         gluLookAt(eye_x, eye_y, eye_z,   
-#                   look_x, eye_y, look_z, 
-#                   0, 1, 0)         
+        gluLookAt(eye_x, eye_y, eye_z,   
+                  look_x, eye_y, look_z, 
+                  0, 1, 0)         
 
 
 
