@@ -187,13 +187,16 @@ def is_wall(x, z):
 
 
 def draw_player():
+    if camera_mode == "first":
+        return  
+
     glPushMatrix()
 
     if cheat_mode:
         glTranslatef(player_pos[0], 100, player_pos[2])
     else:
         glTranslatef(player_pos[0], 50, player_pos[2])
-    glRotatef(player_angle+90, 0, 1, 0)  
+    glRotatef(-player_angle+90, 0, 1, 0)  
 
     if game_over: #player lies down when game over
         glRotatef(90, 1, 0, 0)
@@ -313,6 +316,9 @@ def check_win_condition():
 
 
 def update_enemy_positions():
+    if paused or game_over:
+        return 
+    
     for enemy in enemies:
         sx, sz = enemy["start"]
         ex, ez = enemy["end"]
@@ -374,58 +380,6 @@ def cheat_egg_collision():
             cheat_ready = False
             sequence_index = 0  
             print("Went too far from egg.")
-
-def keyboardListener(key, x, y):
-    global cheat_mode, cheat_unlocked
-    global game_over, life, collected, remaining, treasure_positions, paused
-    global player_pos, enemies, cheat_ready, sequence_index
-    global player_angle, camera_mode, goal_achieved, last_hit_time
-    global cheat_egg_pos, egg_visible
-
-    if key == b'r':  # restart
-        game_over = False
-        treasure_positions = [(-950, 30, -700), (-50, 30, -150), (900, 30, 900), (1150, 30, 200), (250, 30, 1050),
-                              (1400, 30, -300), (-650, 30, 1400), (-1400, 30, 550), (1150, 30, -1500), (-50, 30, -1200)]
-        
-        life = 5
-        collected = 0
-        remaining = len(treasure_positions)
-        
-        player_pos = [13 * GRID_LENGTH + (GRID_LENGTH // 2), 0, 12 * GRID_LENGTH + (GRID_LENGTH // 2)]
-        player_angle = 0
-        camera_mode = "third"
-        goal_achieved = False
-        last_hit_time = 0
- 
-        cheat_mode = False
-        cheat_ready = False
-        sequence_index = 0
-        cheat_unlocked = False
-        cheat_egg_pos = list(random.choice(cheat_egg_positions))
-        egg_visible = True
-
-        print("Game restarted.")
-
-    if key == b'c':
-        if cheat_unlocked:  # Only allow toggling after cheat egg is found
-            cheat_mode = not cheat_mode
-            if cheat_mode:
-                print("Cheat mode ON")
-            else:
-                print("Cheat mode OFF")
-    
-    if key == b'p': #pause
-        if not game_over:
-            paused = not paused
-        
-        if paused:
-            print("Game paused!")
-        else:
-            print("Game Resumed")
-
-    if key == b'\x1b': #close game window/ exit game
-        glutLeaveMainLoop()
-
 
 # Treasure
 def draw_treasure():
@@ -509,6 +463,57 @@ def enemy_collision():
                 print("Game Over!")
             break 
 
+def keyboardListener(key, x, y):
+    global cheat_mode, cheat_unlocked
+    global game_over, life, collected, remaining, treasure_positions, paused
+    global player_pos, enemies, cheat_ready, sequence_index
+    global player_angle, camera_mode, goal_achieved, last_hit_time
+    global cheat_egg_pos, egg_visible
+
+    if key == b'r':  # restart
+        game_over = False
+        treasure_positions = [(-950, 30, -700), (-50, 30, -150), (900, 30, 900), (1150, 30, 200), (250, 30, 1050),
+                              (1400, 30, -300), (-650, 30, 1400), (-1400, 30, 550), (1150, 30, -1500), (-50, 30, -1200)]
+        
+        life = 5
+        collected = 0
+        remaining = len(treasure_positions)
+        
+        player_pos = [13 * GRID_LENGTH + (GRID_LENGTH // 2), 0, 12 * GRID_LENGTH + (GRID_LENGTH // 2)]
+        player_angle = 0
+        camera_mode = "third"
+        goal_achieved = False
+        last_hit_time = 0
+ 
+        cheat_mode = False
+        cheat_ready = False
+        sequence_index = 0
+        cheat_unlocked = False
+        cheat_egg_pos = list(random.choice(cheat_egg_positions))
+        egg_visible = True
+
+        print("Game restarted.")
+
+    if key == b'c':
+        if cheat_unlocked:  # Only allow toggling after cheat egg is found
+            cheat_mode = not cheat_mode
+            if cheat_mode:
+                print("Cheat mode ON")
+            else:
+                print("Cheat mode OFF")
+    
+    if key == b'p': #pause
+        if not game_over:
+            paused = not paused
+        
+        if paused:
+            print("Game paused!")
+        else:
+            print("Game Resumed")
+
+    if key == b'\x1b': #close game window/ exit game
+        glutLeaveMainLoop()
+
 def specialKeyListener(key, x, y):
     global player_pos, sequence_index, cheat_mode, cheat_ready, egg_visible, camera_mode, player_angle, rotate
     speed = 10
@@ -583,7 +588,7 @@ def specialKeyListener(key, x, y):
                     player_pos = [new_x, py, new_z]
                 player_angle = 0
             if camera_mode == 'first' or (camera_mode == "third" and rotate == True):
-                player_angle -= angle_step
+                player_angle += angle_step
 
         elif key == GLUT_KEY_LEFT:  # Move player left
             if camera_mode == "third" and rotate == False:
@@ -597,7 +602,7 @@ def specialKeyListener(key, x, y):
                     player_pos = [new_x, py, new_z]
                 player_angle = 0
             if camera_mode == 'first' or (camera_mode == "third" and rotate == True):
-                player_angle += angle_step
+                player_angle -= angle_step
 
     px, py, pz = player_pos
 
@@ -606,6 +611,7 @@ def mouseListener(button, state, x, y):
     if button == GLUT_LEFT_BUTTON and state == GLUT_DOWN and not game_over: #camera toggle
         if camera_mode == "third":
             camera_mode = "first"
+            rotate = True
         else:
             camera_mode = "third"
         print(f"Switched to {camera_mode}-person mode")
@@ -625,7 +631,7 @@ def set_camera():
               0,0,0,   
               0, 1, 0)
 
-def set_camera():  #corrected set_camera() for first and third person mode
+def set_camera(): #corrected set_camera() for first and third person mode
     global player_pos, player_angle, camera_mode
 
     px, py, pz = player_pos
@@ -643,21 +649,20 @@ def set_camera():  #corrected set_camera() for first and third person mode
         gluLookAt(cam_x, cam_y, cam_z,  
                   px, py + 50, pz,      
                   0, 1, 0)              
-
+    
     elif camera_mode == "first":
         angle_rad = math.radians(player_angle)
-
+    
         eye_x = px
-        eye_y = py + 120 
+        eye_y = py + 100  # Player's head is at y + 100 in draw_player()
         eye_z = pz
-
-        look_x = eye_x - math.cos(angle_rad) * 100
-        look_z = eye_z - math.sin(angle_rad) * 100
-
-        gluLookAt(eye_x, eye_y, eye_z,   
-                  look_x, eye_y, look_z, 
-                  0, 1, 0)         
-
+    
+        look_x = eye_x - math.cos(angle_rad) * 60
+        look_z = eye_z - math.sin(angle_rad) * 60
+    
+        gluLookAt(eye_x, eye_y, eye_z,   # Player's head position
+                  look_x, eye_y, look_z, # Look straight ahead
+                  0, 1, 0)
 
 
 def display_cheat_progress():
@@ -683,10 +688,10 @@ def cheat():
 
 
 def idle():
-    if not game_over or not paused:
+    if not game_over:
         cheat()
         update_enemy_positions()
-    if goal_achieved:
+    if goal_achieved or paused:
         return
     glutPostRedisplay()
 
