@@ -55,29 +55,7 @@ remaining = len(treasure_positions)
 goal_achieved = False
 
 # on-screen texts
-def draw_text1(x, y, text, font = GLUT_BITMAP_HELVETICA_18): # type: ignore
-    glColor3f(1,1,1)
-    glMatrixMode(GL_PROJECTION)
-    glPushMatrix()
-    glLoadIdentity()
-    
-    gluOrtho2D(0, 1000, 0, 600)  # left, right, bottom, top
-
-    glMatrixMode(GL_MODELVIEW)
-    glPushMatrix()
-    glLoadIdentity()
-    
-    # Draw text 
-    glRasterPos2f(x, y)
-    for ch in text:
-        glutBitmapCharacter(font, ord(ch))
-    
-    glPopMatrix()
-    glMatrixMode(GL_PROJECTION)
-    glPopMatrix()
-    glMatrixMode(GL_MODELVIEW)
-
-def draw_text2(x, y, text, font = GLUT_BITMAP_HELVETICA_12): # type: ignore
+def draw_text(x, y, text, font):
     glColor3f(1,1,1)
     glMatrixMode(GL_PROJECTION)
     glPushMatrix()
@@ -730,8 +708,6 @@ def idle():
     if paused:
         return
 
-
-
 def showScreen():
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glLoadIdentity()
@@ -742,27 +718,27 @@ def showScreen():
     
     # game info text
     if not game_over:  # always showing game updates
-        draw_text1(10, 570, f"Player Life Remaining: {life} ")
-        draw_text1(10, 545, f"Collected Treasure: {collected}")
-        draw_text1(10, 520, f"Remaining Treasure: {remaining}")
+        draw_text(10, 570, f"Player Life Remaining: {life}", GLUT_BITMAP_HELVETICA_18)      # type: ignore
+        draw_text(10, 545, f"Collected Treasure: {collected}", GLUT_BITMAP_HELVETICA_18)    # type: ignore
+        draw_text(10, 520, f"Remaining Treasure: {remaining}", GLUT_BITMAP_HELVETICA_18)    # type: ignore
     
     if cheat_unlocked and not game_over: # always showing after cheat mode activation
-        draw_text2(10, 495, f"Cheat Mode Activated!")
+        draw_text(10, 495, f"Cheat Mode Activated!", GLUT_BITMAP_HELVETICA_12)      # type: ignore
     
     if game_over: # shows after game over
-        draw_text1(430, 550, f"Game Over.")
-        draw_text2(300, 520, f"Total Treasure Collected: {collected}   |  Press 'R' to RESTART the Game.")
+        draw_text(430, 550, f"Game Over.", GLUT_BITMAP_HELVETICA_18)    # type: ignore
+        draw_text(300, 520, f"Total Treasure Collected: {collected}   |  Press 'R' to RESTART the Game.", GLUT_BITMAP_HELVETICA_12)     # type: ignore
 
     if cheat_ready and not cheat_mode and not paused and not cheat_unlocked: # shows only when player near egg
-        draw_text1(350, 550, f"You found a mysterious egg! A whisper echoes...")
-        draw_text1(350, 525, f"'UP UP DOWN DOWN LEFT RIGHT LEFT RIGHT'")
+        draw_text(350, 550, f"You found a mysterious egg! A whisper echoes...", GLUT_BITMAP_HELVETICA_18)   # type: ignore
+        draw_text(350, 525, f"'UP UP DOWN DOWN LEFT RIGHT LEFT RIGHT'", GLUT_BITMAP_HELVETICA_18)           # type: ignore
     
     if not goal_achieved and paused: # shows when game paused
-        draw_text2(400, 520, "Game Paused   |   Press 'P' to Resume.")
+        draw_text(400, 520, "Game Paused   |   Press 'P' to Resume.", GLUT_BITMAP_HELVETICA_12)     # type: ignore
     
     if goal_achieved: # shows on game completion
-        draw_text1(430, 520, "You Win!!")
-        draw_text2(400, 490, "Press 'R' to Play Again.")
+        draw_text(430, 520, "You Win!!", GLUT_BITMAP_HELVETICA_18)      # type: ignore
+        draw_text(400, 490, "Press 'R' to Play Again.", GLUT_BITMAP_HELVETICA_12)      # type: ignore
 
 
     draw_player()
