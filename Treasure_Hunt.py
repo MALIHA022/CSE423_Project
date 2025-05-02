@@ -30,7 +30,7 @@ enemy_positions = [(-80, 50, -130), (1250, 50, 100), (280, 50, 1150), (1450, 50,
 enemies = []
 enemy_count = len(enemy_positions)
 last_hit_time = 0
-invincible_duration = 1.0  
+invincible_duration = 1.5  
 
 
 #cheat mode
@@ -650,38 +650,38 @@ def set_camera(): #remove before submission
               0,0,0,   
               0, 1, 0)
 
-def set_camera(): #corrected set_camera() for first and third person mode
-    global player_pos, player_angle, camera_mode
+# def set_camera(): #corrected set_camera() for first and third person mode
+#     global player_pos, player_angle, camera_mode
 
-    px, py, pz = player_pos
+#     px, py, pz = player_pos
 
-    if camera_mode == "third":
-        distance = 150
-        height = 200
+#     if camera_mode == "third":
+#         distance = 150
+#         height = 200
 
-        angle_rad = math.radians(player_angle)
+#         angle_rad = math.radians(player_angle)
 
-        cam_x = px + math.cos(angle_rad) * distance
-        cam_y = py + height
-        cam_z = pz + math.sin(angle_rad) * distance
+#         cam_x = px + math.cos(angle_rad) * distance
+#         cam_y = py + height
+#         cam_z = pz + math.sin(angle_rad) * distance
 
-        gluLookAt(cam_x, cam_y, cam_z,  
-                  px, py + 50, pz,      
-                  0, 1, 0)              
+#         gluLookAt(cam_x, cam_y, cam_z,  
+#                   px, py + 50, pz,      
+#                   0, 1, 0)              
     
-    elif camera_mode == "first":
-        angle_rad = math.radians(player_angle)
+#     elif camera_mode == "first":
+#         angle_rad = math.radians(player_angle)
     
-        eye_x = px
-        eye_y = py + 100  # Player's head is at y + 100 in draw_player()
-        eye_z = pz
+#         eye_x = px
+#         eye_y = py + 100  # Player's head is at y + 100 in draw_player()
+#         eye_z = pz
     
-        look_x = eye_x - math.cos(angle_rad) * 60
-        look_z = eye_z - math.sin(angle_rad) * 60
+#         look_x = eye_x - math.cos(angle_rad) * 60
+#         look_z = eye_z - math.sin(angle_rad) * 60
     
-        gluLookAt(eye_x, eye_y, eye_z,   # Player's head position
-                  look_x, eye_y, look_z, # Look straight ahead
-                  0, 1, 0)
+#         gluLookAt(eye_x, eye_y, eye_z,   # Player's head position
+#                   look_x, eye_y, look_z, # Look straight ahead
+#                   0, 1, 0)
 
 
 def display_cheat_progress(): # cheat sequence progress in terminal

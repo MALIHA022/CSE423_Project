@@ -1,52 +1,51 @@
 Gameplay:
-1. Player explores a 3D maze built using cubes. Done
-2. Movement system- arrow keys movement.  Maliha - Done
-3. Camera toggle between first-person and third-person views with mouse left button click. Maliha - Done
-4. Player rotation toggle with mouse right button click.  Maliha - Done
-    - Player can always rotate in first person mode.  Done
-    - Rotation toggle is used in third person mode    Done
-5. Objective: Collect all 10 unique colored treasures and reach the goal. Nazah
-6. A red bonus treasure unlocks cheat mode when a secret key combo is triggered. the game can be completed even without triggering the cheat mode Maliha - Done
+1. Player explores a 3D maze.(Cubes arranged from a 2D maze array).                                         Maliha - Done
+2. Movement system- arrow keys movement(up, down, left, right).                                             Maliha - Done
+3. Camera toggle between first-person and third-person views with mouse left button click.                  Maliha - Done
+4. Player rotation toggle with mouse right button click.                                                    Maliha - Done
+    - Player can always rotate in first person mode.   
+    - Rotation toggle is used in third person mode     
+5. Objective: Collect all 10 colored treasures(10 Small colored spheres and 1 bonus sphere).                Nazah - Done
+6. A bonus sphere treasure unlocks cheat mode when a secret key combo is triggered.                         Maliha - Done
+7. Enemies keep patroling on short paths throughout the maze.                                               Moontaha - Done
+8. Game completes after player collecting all 10 spheres.
+9. Player losing all lives results in game over.
+10. Score and game updates are displayed throughout the game.
+11. Game feedbacks are shown in terminal.
+12. Game Pause, Restart, Exit and cheat toggle with keyboard.
 
 Player:
-1. Constructed using basic shapes (sphere, cylinder, cube). Nazah - Done
+1. Constructed using basic shapes (sphere, cylinder, cube).                                                 Nazah - Done
 2. Starts with 5 lives. If lives reach 0: Game Over.
 3. Collision with enemies reduces 1 life.
 
 Treasures:
-1. 10 small random colored spheres placed across the maze: Nazah - Done
-2. 10 standard treasures and 1 special sphere (bonus treasure, player can win even without collecting it, collecting triggers cheat mode).
-3. Treasures are placed in listed locations and each treasure is guarded by a patrolling enemy.
-4. Collecting a treasure removes it from the map.
+1. 10 small random colored spheres and 1 special sphere placed across the maze:                              Nazah - Done
+3. Treasures are placed in listed locations and is guarded by a patrolling enemies.                          Moontaha - Done
+4. Collecting a treasure removes it from the map.                                                            Maliha - Done
 
 Enemies: 
-1. Draw enemy near treasure-nazah
-1. One enemy guards each treasure that Moves back and forth along a short patrol path.
+1. Draw enemy.                                                                                               Nazah - Done
+1. Enemies Moves back and forth along a short patrol path.                                                   Moontaha - Done
 2. Cannot be killed and doesn’t chase the player.
 3. Collision results in player losing a life.
 
-Cheat Mode: Maliha - Done
+Cheat Mode:                                                                                                  Maliha - Done
 1. Unlocked only after:
 2. Collecting the bonus treasure and entering a secret key combination.
 3. Enables flying and avoids wall collision.
 
-Visual Design:
-1. Game platform and Maze walls:  Cubes arranged from a 2D maze array.  Maliha - Done
-2. Treasures: Small colored spheres, visually distinct. Nazah -Done
-3. Enemies: Patroling spheres     Nazah
-4. Player: Built using sphere, cube and cylinder.  Nazah - Done
-
 Game States: 
 1. Win Condition: All 10 treasures collected. Nazah
 2. Lose Condition: Player’s lives reach 0 (disables further movement/collection).
-3. display for score, and collection progress.
+3. Display for score, and collection progress.
 
 ################################################################################################
 Bugs need to be fixed:
-1. Remove last treasure then return     Done
-2. Cheat mode treasure collision    Done
+1. Remove last treasure then return                                             Done
+2. Cheat mode treasure collision                                                Done
 3. Dont let the player turn off cheat when player is not over walkable tiles.   Done
-4. All enemies do not collide with player, recheck and fix their position   Done
-5. Enemies are going inside walls, fix thier position
-6. Fix keyboard and mouse functions after game over or goal achieved.   Done 
-7. Draw text for different actions.     Done
+4. All enemies do not collide with player, recheck and fix their position       Done
+5. Enemies are going inside walls, fix thier position                           Done
+6. Fix keyboard and mouse functions after game over or goal achieved.           Done 
+7. Draw text for different actions.                                             Done
