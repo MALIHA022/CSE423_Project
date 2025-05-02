@@ -8,16 +8,16 @@ Gameplay:
 5. Objective: Collect all 10 colored treasures(10 Small colored spheres and 1 bonus sphere).                Nazah - Done
 6. A bonus sphere treasure unlocks cheat mode when a secret key combo is triggered.                         Maliha - Done
 7. Enemies keep patroling on short paths throughout the maze.                                               Moontaha - Done
-8. Game completes after player collecting all 10 spheres.
-9. Player losing all lives results in game over.
+8. Game completes after player collecting all 10 spheres.                                                   Nazah-Done
+9. Player losing all lives results in game over.                                                            Maliha-Done
 10. Score and game updates are displayed throughout the game.
-11. Game feedbacks are shown in terminal.
-12. Game Pause, Restart, Exit and cheat toggle with keyboard.
+11. Game feedbacks are shown in terminal.                                                                   
+12. Game Pause, Restart, Exit and cheat toggle with keyboard.                                                Maliha_Done
 
-Player:
-1. Constructed using basic shapes (sphere, cylinder, cube).                                                 Nazah - Done
-2. Starts with 5 lives. If lives reach 0: Game Over.
-3. Collision with enemies reduces 1 life.
+Player:                                                                                                      
+1. Constructed using basic shapes (sphere, cylinder, cube).                                                Nazah_Done
+2. Starts with 5 lives. If lives reach 0: Game Over.                                                       Nazah_Done
+3. Collision with enemies reduces 1 life.                                                                  Nazah_Done
 
 Treasures:
 1. 10 small random colored spheres and 1 special sphere placed across the maze:                              Nazah - Done
@@ -36,7 +36,7 @@ Cheat Mode:                                                                     
 3. Enables flying and avoids wall collision.
 
 Game States: 
-1. Win Condition: All 10 treasures collected. Nazah
+1. Win Condition: All 10 treasures collected.                                                                Nazah-Done
 2. Lose Condition: Player’s lives reach 0 (disables further movement/collection).
 3. Display for score, and collection progress.
 
