@@ -43,7 +43,8 @@ Game States:
 
 ################################################################################################
 Bugs need to be fixed:
-1. remove last treasure then return
+1. Remove last treasure then return     Done
 2. cheat mode treasure collision
-3. all enemies do not collide with player, recheck and fix their position
-4. enemies are going inside walls, fix thier position
+3. Dont let the player turn off cheat when player is not over walkable tiles.
+4. all enemies do not collide with player, recheck and fix their position   Done
+5. enemies are going inside walls, fix thier position
