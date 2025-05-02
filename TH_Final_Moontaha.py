@@ -330,7 +330,7 @@ def update_enemy_positions():
         # dx = ex - sx
         # dz = ez - sz
 
-        speed = 1.5
+        speed = 2.0
 
         # Move along direction
         # enemy["x"] += enemy["dir"] * (dx / 100) * speed
