@@ -273,7 +273,6 @@ def spawn_enemy():
     global enemies
     enemies = []
 
-    # Your original intended positions
     enemy_positions = [
         (0, 50, -430, "x"),
         (-1120, 50, 1440, "z"), 
@@ -288,11 +287,11 @@ def spawn_enemy():
     ]
 
     for x, y, z, go in enemy_positions:
-        # Convert world coordinates to maze coordinates
+        # maze coordinates
         col = int((x + (len(maze[0]) // 2) * GRID_LENGTH) // GRID_LENGTH)
         row = int((z + (len(maze) // 2) * GRID_LENGTH) // GRID_LENGTH)
 
-        # Check if it's walkable (0)
+        # Check if it's walkable maze path
         if 0 <= row < len(maze) and 0 <= col < len(maze[0]) and maze[row][col] == 0:
             enemy = {
                 "x": x,
@@ -309,27 +308,7 @@ def update_enemy_positions():
         return 
     
     for enemy in enemies:
-        # sx, sz = enemy["start"]
-        # sx= enemy["start"]
-        # ex, ez = enemy["end"]
-        # ex= enemy["end"]
-        # dx = ex - sx
-        # dz = ez - sz
-
-        speed = 1.5
-
-        # Move along direction
-        # enemy["x"] += enemy["dir"] * (dx / 100) * speed
-        # enemy["z"] += enemy["dir"] * (dz / 100) * speed
-
-        # Check distance to start or end
-        # dist_to_end = math.sqrt((enemy["x"] - ex) ** 2 + (enemy["z"] - ez) ** 2)
-        # dist_to_end = math.sqrt((enemy["x"] - ex) ** 2)
-        # dist_to_start = math.sqrt((enemy["x"] - sx) ** 2 + (enemy["z"] - sz) ** 2)
-        # dist_to_start = math.sqrt((enemy["x"] - sx) ** 2 )
-
-        # if dist_to_end < 5 or dist_to_start < 5:
-            # enemy["dir"] *= -1  # reverse
+        speed = 3.0
 
         if enemy["go"] == "x":
             enemy["x"] += enemy["dir"] * speed
@@ -391,7 +370,6 @@ def draw_cheat_egg():
     glPopMatrix()
 
     glPopMatrix()
-
 
 def cheat_egg_collision():
     global cheat_ready, sequence_index, player_pos, cheat_egg_pos, cheat_unlocked
@@ -672,38 +650,38 @@ def set_camera(): #remove before submission
               0,0,0,   
               0, 1, 0)
 
-# def set_camera(): #corrected set_camera() for first and third person mode
-#     global player_pos, player_angle, camera_mode
+def set_camera(): #corrected set_camera() for first and third person mode
+    global player_pos, player_angle, camera_mode
 
-#     px, py, pz = player_pos
+    px, py, pz = player_pos
 
-#     if camera_mode == "third":
-#         distance = 150
-#         height = 200
+    if camera_mode == "third":
+        distance = 150
+        height = 200
 
-#         angle_rad = math.radians(player_angle)
+        angle_rad = math.radians(player_angle)
 
-#         cam_x = px + math.cos(angle_rad) * distance
-#         cam_y = py + height
-#         cam_z = pz + math.sin(angle_rad) * distance
+        cam_x = px + math.cos(angle_rad) * distance
+        cam_y = py + height
+        cam_z = pz + math.sin(angle_rad) * distance
 
-#         gluLookAt(cam_x, cam_y, cam_z,  
-#                   px, py + 50, pz,      
-#                   0, 1, 0)              
+        gluLookAt(cam_x, cam_y, cam_z,  
+                  px, py + 50, pz,      
+                  0, 1, 0)              
     
-#     elif camera_mode == "first":
-#         angle_rad = math.radians(player_angle)
+    elif camera_mode == "first":
+        angle_rad = math.radians(player_angle)
     
-#         eye_x = px
-#         eye_y = py + 100  # Player's head is at y + 100 in draw_player()
-#         eye_z = pz
+        eye_x = px
+        eye_y = py + 100  # Player's head is at y + 100 in draw_player()
+        eye_z = pz
     
-#         look_x = eye_x - math.cos(angle_rad) * 60
-#         look_z = eye_z - math.sin(angle_rad) * 60
+        look_x = eye_x - math.cos(angle_rad) * 60
+        look_z = eye_z - math.sin(angle_rad) * 60
     
-#         gluLookAt(eye_x, eye_y, eye_z,   # Player's head position
-#                   look_x, eye_y, look_z, # Look straight ahead
-#                   0, 1, 0)
+        gluLookAt(eye_x, eye_y, eye_z,   # Player's head position
+                  look_x, eye_y, look_z, # Look straight ahead
+                  0, 1, 0)
 
 
 def display_cheat_progress(): # cheat sequence progress in terminal
@@ -723,7 +701,7 @@ def cheat():
     global player_pos
 
     if cheat_mode:
-        if player_pos[1] < 250:    
+        if player_pos[1] < 100:    
             player_pos[1] += 10    
 
 
