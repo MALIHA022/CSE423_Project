@@ -24,13 +24,10 @@ collected = 0
 rotate = False
 
 #enemies
-enemy_positions = [(-80, 50, -130), (1250, 50, 100), (280, 50, 1150), (1450, 50, -500), 
-                   (-750, 50, 1500), (-1100, 50, -25), (1250, 50, -1100), (-80, 50, -1300)]
-
 enemies = []
-enemy_count = len(enemy_positions)
+enemy_count = 10
 last_hit_time = 0
-invincible_duration = 1.5  
+cooldown_duration = 1.5  
 
 
 #cheat mode
@@ -43,10 +40,10 @@ cheat_mode = False      # cheat mode on off
 cheat_ready = False     # near cheat egg - ready to trigger cheat mode
 egg_visible = True      # when cheat mode unlocked - egg disappears
 cheat_unlocked = False  #unlocking cheatmode once
-
+skip_wall_collision_player = False
 
 # treasure
-num_spheres=10
+num_spheres = 10
 treasure_positions = [(-850, 30, -700), (-50, 30, -150), (900, 30, 900), (1150, 30, 200), (250, 30, 1050),
                       (1400, 30, -300), (-650, 30, 1400), (-1400, 30, 550), (1150, 30, -1500), (-50, 30, -1200)]
 remaining = len(treasure_positions)
@@ -147,8 +144,8 @@ def draw_maze():
                 z = (row - len(maze) // 2) * GRID_LENGTH
                 draw_cube(x, 25, z)
 
-def is_wall(x, z, wallpass = False): #maze walls collision detection
-    player_radius = 25
+def is_wall(x, z, skip_wall_collision_player): #maze walls collision detection
+    player_radius = 25 
 
     maze_width = len(maze[0]) * GRID_LENGTH
     maze_height = len(maze) * GRID_LENGTH
@@ -160,10 +157,10 @@ def is_wall(x, z, wallpass = False): #maze walls collision detection
     if not (-half_width <= x <= half_width and -half_height <= z <= half_height):
         return True  # Out of bounds
 
-    # skipping cheat off inside maze walls
-    if cheat_mode and not wallpass:
+    # skiping inside maze walls
+    if skip_wall_collision_player:
         return False
-
+    
     # wall collision - normal state
     px_min = x - player_radius
     px_max = x + player_radius
@@ -280,9 +277,7 @@ def spawn_enemy():
         (-730, 50, 550, "z"),
         (250, 45, 550, 'z'),
         (1350, 50, -1130, 'x'), 
-
         (900, 50, 1000, "z"),
-
         (1450, 50, -500, 'z'), 
     ]
 
@@ -328,7 +323,7 @@ def enemy_collision():
         return
 
     now = time.time()
-    if now - last_hit_time < invincible_duration:
+    if now - last_hit_time < cooldown_duration:
         return 
 
     px, py, pz = player_pos[0], 50, player_pos[2]
@@ -503,7 +498,7 @@ def keyboardListener(key, x, y):
     if key == b'c':
         if cheat_unlocked:
             if cheat_mode:
-                if not is_wall(player_pos[0], player_pos[2], wallpass = True): # cheatmode off when no maze wall beneath
+                if not is_wall(player_pos[0], player_pos[2], skip_wall_collision_player=False): # cheatmode off when no maze wall beneath
                     cheat_mode = False
                     print("Cheat mode OFF")
                 else:  
@@ -545,7 +540,7 @@ def specialKeyListener(key, x, y):
     if not cheat_mode and key in key_map:
         pressed_key = key_map[key]
         
-        # CHEAT MODE ACTIVATION
+        # CHEAT MODE ACTIVATION 
         if cheat_ready and not cheat_mode:
             if sequence_index < len(cheat_sequence):
                 expected_key = cheat_sequence[sequence_index]
@@ -562,7 +557,7 @@ def specialKeyListener(key, x, y):
                     print(f"Wrong key! Restarting sequence.")
                     sequence_index = 0
 
-    # Normal player movement  
+    #normal player movement
     angle_step = 5
     if not game_over:
         angle = math.radians(player_angle)
@@ -574,7 +569,7 @@ def specialKeyListener(key, x, y):
             new_x = px + dx
             new_z = pz + dz
 
-            if not is_wall(new_x, new_z):
+            if not is_wall(new_x, new_z, skip_wall_collision_player):
                 player_pos = [new_x, py, new_z]  
 
         elif key == GLUT_KEY_DOWN:  # Move player backward
@@ -584,7 +579,7 @@ def specialKeyListener(key, x, y):
             new_x = px + dx
             new_z = pz + dz
 
-            if not is_wall(new_x, new_z):
+            if not is_wall(new_x, new_z, skip_wall_collision_player):
                 player_pos = [new_x, py, new_z]
 
         elif key == GLUT_KEY_RIGHT:  # Move player right
@@ -595,7 +590,7 @@ def specialKeyListener(key, x, y):
                 new_x = px + dx
                 new_z = pz + dz
 
-                if not is_wall(new_x, new_z):
+                if not is_wall(new_x, new_z, skip_wall_collision_player):
                     player_pos = [new_x, py, new_z]
                 player_angle = 0
             
@@ -611,11 +606,11 @@ def specialKeyListener(key, x, y):
                 new_x = px + dx
                 new_z = pz + dz
 
-                if not is_wall(new_x, new_z):
+                if not is_wall(new_x, new_z, skip_wall_collision_player):
                     player_pos = [new_x, py, new_z]
                 player_angle = 0
 
-            # if rotation on rotate in third person as well
+            # if rotation on - rotate in third person as well
             if camera_mode == 'first' or (camera_mode == "third" and rotate == True):
                 player_angle -= angle_step
 
@@ -698,11 +693,14 @@ def display_cheat_progress(): # cheat sequence progress in terminal
 
 
 def cheat():
-    global player_pos
+    global player_pos, skip_wall_collision_player
 
     if cheat_mode:
         if player_pos[1] < 100:    
             player_pos[1] += 10    
+        skip_wall_collision_player = True
+    else:
+        skip_wall_collision_player = False
 
 
 def idle():
