@@ -160,7 +160,7 @@ def is_wall(x, z, wallpass = False): #maze walls collision detection
     if not (-half_width <= x <= half_width and -half_height <= z <= half_height):
         return True  # Out of bounds
 
-    # skiping get off inside maze walls
+    # skipping cheat off inside maze walls
     if cheat_mode and not wallpass:
         return False
 
@@ -270,22 +270,35 @@ def draw_enemy(e):
 
 
 def spawn_enemy():
-    global enemies, enemy_positions
+    global enemies
     enemies = []
 
-    for x, y, z in enemy_positions:
-        # maze coordinates
+    # Your original intended positions
+    enemy_positions = [
+        (0, 50, -430, "x"),
+        (-1120, 50, 1440, "z"), 
+        (-1100, 50, -840, "z"), 
+        (-730, 50, 550, "z"),
+        (250, 45, 550, 'z'),
+        (1350, 50, -1130, 'x'), 
+
+        (900, 50, 1000, "z"),
+
+        (1450, 50, -500, 'z'), 
+    ]
+
+    for x, y, z, go in enemy_positions:
+        # Convert world coordinates to maze coordinates
         col = int((x + (len(maze[0]) // 2) * GRID_LENGTH) // GRID_LENGTH)
         row = int((z + (len(maze) // 2) * GRID_LENGTH) // GRID_LENGTH)
 
-        # maze path
+        # Check if it's walkable (0)
         if 0 <= row < len(maze) and 0 <= col < len(maze[0]) and maze[row][col] == 0:
             enemy = {
                 "x": x,
                 "y": y,
                 "z": z,
-                "start": (x - 60, z - 60),
-                "end": (x + 60, z + 60),
+                "go": go,
                 "dir": 1,
                 "scale": 1.0
             }
@@ -296,23 +309,38 @@ def update_enemy_positions():
         return 
     
     for enemy in enemies:
-        sx, sz = enemy["start"]
-        ex, ez = enemy["end"]
-        dx = ex - sx
-        dz = ez - sz
+        # sx, sz = enemy["start"]
+        # sx= enemy["start"]
+        # ex, ez = enemy["end"]
+        # ex= enemy["end"]
+        # dx = ex - sx
+        # dz = ez - sz
 
         speed = 1.5
 
         # Move along direction
-        enemy["x"] += enemy["dir"] * (dx / 100) * speed
-        enemy["z"] += enemy["dir"] * (dz / 100) * speed
+        # enemy["x"] += enemy["dir"] * (dx / 100) * speed
+        # enemy["z"] += enemy["dir"] * (dz / 100) * speed
 
         # Check distance to start or end
-        dist_to_end = math.sqrt((enemy["x"] - ex) ** 2 + (enemy["z"] - ez) ** 2)
-        dist_to_start = math.sqrt((enemy["x"] - sx) ** 2 + (enemy["z"] - sz) ** 2)
+        # dist_to_end = math.sqrt((enemy["x"] - ex) ** 2 + (enemy["z"] - ez) ** 2)
+        # dist_to_end = math.sqrt((enemy["x"] - ex) ** 2)
+        # dist_to_start = math.sqrt((enemy["x"] - sx) ** 2 + (enemy["z"] - sz) ** 2)
+        # dist_to_start = math.sqrt((enemy["x"] - sx) ** 2 )
 
-        if dist_to_end < 5 or dist_to_start < 5:
-            enemy["dir"] *= -1  # reverse
+        # if dist_to_end < 5 or dist_to_start < 5:
+            # enemy["dir"] *= -1  # reverse
+
+        if enemy["go"] == "x":
+            enemy["x"] += enemy["dir"] * speed
+            if is_wall(enemy["x"]+20, enemy["z"]+20, False):
+                enemy["dir"] *= -1  # reverse
+
+        if enemy["go"] == "z":
+            enemy["z"] += enemy["dir"] * speed
+            if is_wall(enemy["x"]+20, enemy["z"]+20, False):
+                enemy["dir"] *= -1  # reverse
+
 
 def enemy_collision():
     global enemies, player_pos, life, game_over, last_hit_time, goal_achieved
