@@ -405,17 +405,17 @@ def treasure_collision():
         return
 
     px, _, pz = player_pos
-    if cheat_mode:
-        py = 100
-    else:
-        py = 50
+    py = 100 if cheat_mode else 50
 
     new_spheres = []
 
-    for (x, y, z) in treasure_positions:
-        dx = px - x
-        dy = py - y
-        dz = pz - z
+    for (tx, ty, tz) in treasure_positions:
+        # Adjust treasure Y based on cheat mode (just like when drawing)
+        adjusted_ty = ty + 50 if cheat_mode else ty
+
+        dx = px - tx
+        dy = py - adjusted_ty
+        dz = pz - tz
 
         distance = math.sqrt(dx * dx + dy * dy + dz * dz)
 
@@ -424,14 +424,13 @@ def treasure_collision():
             remaining -= 1
             print(f"Treasure collected! Total: {collected}")
         else:
-            new_spheres.append((x, y, z))
+            new_spheres.append((tx, ty, tz))
 
     treasure_positions = new_spheres
 
-    if collected == 10:
+    if collected == 10 and not goal_achieved:
         goal_achieved = True
         print("Goal Achieved! All treasures collected.")
-        return
 
 
 def enemy_collision():
@@ -472,7 +471,7 @@ def keyboardListener(key, x, y):
     global player_pos, enemies, cheat_ready, sequence_index
     global player_angle, camera_mode, goal_achieved, last_hit_time
     global cheat_egg_pos, egg_visible
-
+    
     if key == b'r':  # restart
         game_over = False
         treasure_positions = [(-950, 30, -700), (-50, 30, -150), (900, 30, 900), (1150, 30, 200), (250, 30, 1050),
@@ -497,6 +496,12 @@ def keyboardListener(key, x, y):
 
         print("Game restarted.")
 
+    if key == b'\x1b': #close game window/ exit game
+        glutLeaveMainLoop()
+    
+    if game_over or goal_achieved:
+        return 
+    
     if key == b'c':
         if goal_achieved:
             return
@@ -516,32 +521,29 @@ def keyboardListener(key, x, y):
         else:
             print("Game Resumed")
 
-    if key == b'\x1b': #close game window/ exit game
-        glutLeaveMainLoop()
-
 def specialKeyListener(key, x, y):
     global player_pos, player_angle,rotate, camera_mode  
     global sequence_index, cheat_mode, cheat_ready, egg_visible
     global game_over, goal_achieved
 
+    if game_over or goal_achieved:
+       return
+
     speed = 20
     px, py, pz = player_pos
 
-    # Map special keys (arrows) to your cheat sequence
+    # keys of cheat sequence
     key_map = {
         GLUT_KEY_UP: 'UP',
         GLUT_KEY_DOWN: 'DOWN',
         GLUT_KEY_LEFT: 'LEFT',
         GLUT_KEY_RIGHT: 'RIGHT'
     }
-    if game_over or goal_achieved:
-       return
 
-    # Handle special keys (arrow keys)
     if key in key_map:
         pressed_key = key_map[key]
         
-        # CHEAT MODE ACTIVATION PROCESS
+        # CHEAT MODE ACTIVATION 
         if cheat_ready and not cheat_mode:
             expected_key = cheat_sequence[sequence_index]
             
@@ -616,6 +618,10 @@ def specialKeyListener(key, x, y):
 
 def mouseListener(button, state, x, y):
     global camera_mode, rotate, player_angle
+    
+    if game_over or goal_achieved:
+        return
+    
     if button == GLUT_LEFT_BUTTON and state == GLUT_DOWN and not game_over: #camera toggle
         if camera_mode == "third":
             camera_mode = "first"
@@ -639,38 +645,38 @@ def set_camera():
               0,0,0,   
               0, 1, 0)
 
-# def set_camera(): #corrected set_camera() for first and third person mode
-#     global player_pos, player_angle, camera_mode
+def set_camera(): #corrected set_camera() for first and third person mode
+    global player_pos, player_angle, camera_mode
 
-#     px, py, pz = player_pos
+    px, py, pz = player_pos
 
-#     if camera_mode == "third":
-#         distance = 150
-#         height = 200
+    if camera_mode == "third":
+        distance = 150
+        height = 200
 
-#         angle_rad = math.radians(player_angle)
+        angle_rad = math.radians(player_angle)
 
-#         cam_x = px + math.cos(angle_rad) * distance
-#         cam_y = py + height
-#         cam_z = pz + math.sin(angle_rad) * distance
+        cam_x = px + math.cos(angle_rad) * distance
+        cam_y = py + height
+        cam_z = pz + math.sin(angle_rad) * distance
 
-#         gluLookAt(cam_x, cam_y, cam_z,  
-#                   px, py + 50, pz,      
-#                   0, 1, 0)              
+        gluLookAt(cam_x, cam_y, cam_z,  
+                  px, py + 50, pz,      
+                  0, 1, 0)              
     
-#     elif camera_mode == "first":
-#         angle_rad = math.radians(player_angle)
+    elif camera_mode == "first":
+        angle_rad = math.radians(player_angle)
     
-#         eye_x = px
-#         eye_y = py + 100  # Player's head is at y + 100 in draw_player()
-#         eye_z = pz
+        eye_x = px
+        eye_y = py + 100  # Player's head is at y + 100 in draw_player()
+        eye_z = pz
     
-#         look_x = eye_x - math.cos(angle_rad) * 60
-#         look_z = eye_z - math.sin(angle_rad) * 60
+        look_x = eye_x - math.cos(angle_rad) * 60
+        look_z = eye_z - math.sin(angle_rad) * 60
     
-#         gluLookAt(eye_x, eye_y, eye_z,   # Player's head position
-#                   look_x, eye_y, look_z, # Look straight ahead
-#                   0, 1, 0)
+        gluLookAt(eye_x, eye_y, eye_z,   # Player's head position
+                  look_x, eye_y, look_z, # Look straight ahead
+                  0, 1, 0)
 
 
 def display_cheat_progress():
@@ -715,19 +721,24 @@ def showScreen():
     draw_maze()
     
     # game info text
-    if not game_over and not cheat_ready:
+    if not game_over and not cheat_ready or cheat_mode:
         draw_text(10, 570, f"Player Life Remaining: {life} ")
-        draw_text(10, 550, f"Collected Treasure: {collected}")
-        draw_text(10, 530, f"Remaining Treasure: {remaining}")
+        draw_text(10, 545, f"Collected Treasure: {collected}")
+        draw_text(10, 520, f"Remaining Treasure: {remaining}")
     if game_over:
-        draw_text(10, 550, f"Game is Over.")
-        draw_text(10, 530, f'Press "R" to RESTART the Game.')
+        draw_text(10, 550, f"Game Over.")
+        draw_text(10, 525, f'Press "R" to RESTART the Game.')
 
     if cheat_ready and not cheat_mode and not paused:
         draw_text(300, 550, f"You found a mysterious egg! A whisper echoes...")
         draw_text(300, 525, f"'UP UP DOWN DOWN LEFT RIGHT LEFT RIGHT'")
-    if paused:
+    
+    if not goal_achieved and paused:
         draw_text(350, 520, "Game Paused. Press 'P' to Resume.")
+    
+    if goal_achieved:
+        draw_text(430, 520, "You Win!!")
+
 
     draw_player()
     draw_cheat_egg()
