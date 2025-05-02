@@ -45,7 +45,8 @@ Game States:
 Bugs need to be fixed:
 1. Remove last treasure then return     Done
 2. Cheat mode treasure collision    Done
-3. Dont let the player turn off cheat when player is not over walkable tiles.
+3. Dont let the player turn off cheat when player is not over walkable tiles.   Done
 4. All enemies do not collide with player, recheck and fix their position   Done
 5. Enemies are going inside walls, fix thier position
 6. Fix keyboard and mouse functions after game over or goal achieved.   Done 
+7. Draw text for different actions.     Done

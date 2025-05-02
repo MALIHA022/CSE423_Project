@@ -42,7 +42,6 @@ cheat_mode = False
 cheat_ready = False
 egg_visible = True
 cheat_unlocked = False
-skip_wall_collision = False
 
 
 # treasure
@@ -55,7 +54,29 @@ remaining = len(treasure_positions)
 goal_achieved = False
    
 
-def draw_text(x, y, text, font = GLUT_BITMAP_HELVETICA_18): # type: ignore
+def draw_text1(x, y, text, font = GLUT_BITMAP_HELVETICA_18): # type: ignore
+    glColor3f(1,1,1)
+    glMatrixMode(GL_PROJECTION)
+    glPushMatrix()
+    glLoadIdentity()
+    
+    gluOrtho2D(0, 1000, 0, 600)  # left, right, bottom, top
+
+    glMatrixMode(GL_MODELVIEW)
+    glPushMatrix()
+    glLoadIdentity()
+    
+    # Draw text 
+    glRasterPos2f(x, y)
+    for ch in text:
+        glutBitmapCharacter(font, ord(ch))
+    
+    glPopMatrix()
+    glMatrixMode(GL_PROJECTION)
+    glPopMatrix()
+    glMatrixMode(GL_MODELVIEW)
+
+def draw_text2(x, y, text, font = GLUT_BITMAP_HELVETICA_12): # type: ignore
     glColor3f(1,1,1)
     glMatrixMode(GL_PROJECTION)
     glPushMatrix()
@@ -148,7 +169,7 @@ def draw_maze():
                 z = (row - len(maze) // 2) * GRID_LENGTH
                 draw_cube(x, 25, z)
 
-def is_wall(x, z):
+def is_wall(x, z, wallpass = False):
     player_radius = 25
 
     maze_width = len(maze[0]) * GRID_LENGTH
@@ -161,7 +182,7 @@ def is_wall(x, z):
         return True  # Out of bounds
 
     # skiping inside maze walls
-    if cheat_mode:
+    if cheat_mode and not wallpass:
         return False
 
     # wall collision
@@ -371,13 +392,12 @@ def cheat_egg_collision():
     left_egg = distance_x > 100 or distance_y > 100 or distance_z > 100
 
     if collision:
-        if not cheat_ready:
-            cheat_unlocked = True
+        if not cheat_ready and not cheat_unlocked:
             cheat_ready = True
             print("You found a mysterious egg... A whisper echoes: ↑ ↑ ↓ ↓ ← → ← →")
     
     elif left_egg:
-        if cheat_ready and not cheat_mode:  
+        if not cheat_unlocked and cheat_ready and not cheat_mode: 
             cheat_ready = False
             sequence_index = 0  
             print("Went too far from egg.")
@@ -395,8 +415,6 @@ def draw_treasure():
 
         gluSphere(gluNewQuadric(), 25, 20, 20)
         glPopMatrix()
-
-
 
 def treasure_collision():
     global collected, remaining, treasure_positions, player_pos, goal_achieved
@@ -503,31 +521,35 @@ def keyboardListener(key, x, y):
         return 
     
     if key == b'c':
-        if goal_achieved:
-            return
-        if cheat_unlocked:  # Only allow toggling after cheat egg is found
-            cheat_mode = not cheat_mode
+        if cheat_unlocked:
             if cheat_mode:
-                print("Cheat mode ON")
+                # Only allow turning OFF if not colliding with any wall
+                if not is_wall(player_pos[0], player_pos[2], wallpass = True):
+                    cheat_mode = False
+                    print("Cheat mode OFF")
+                else:  
+                    print("Cannot turn off cheat mode here – you're over a wall or outside the path!")
+
             else:
-                print("Cheat mode OFF")
-    
+                cheat_mode = True
+                print("Cheat mode ON")
+
+
     if key == b'p': #pause
         if not game_over or not goal_achieved:
             paused = not paused
-        
         if paused:
             print("Game paused!")
         else:
             print("Game Resumed")
 
 def specialKeyListener(key, x, y):
-    global player_pos, player_angle,rotate, camera_mode  
-    global sequence_index, cheat_mode, cheat_ready, egg_visible
+    global player_pos, player_angle, rotate, camera_mode  
+    global sequence_index, cheat_mode, cheat_ready, egg_visible, cheat_unlocked
     global game_over, goal_achieved
 
-    if game_over or goal_achieved:
-       return
+    if game_over or goal_achieved or paused:
+        return
 
     speed = 20
     px, py, pz = player_pos
@@ -540,28 +562,29 @@ def specialKeyListener(key, x, y):
         GLUT_KEY_RIGHT: 'RIGHT'
     }
 
-    if key in key_map:
+    # Handle cheat sequence input only if cheat mode is not active
+    if not cheat_mode and key in key_map:
         pressed_key = key_map[key]
         
-        # CHEAT MODE ACTIVATION 
+        # CHEAT MODE ACTIVATION
         if cheat_ready and not cheat_mode:
-            expected_key = cheat_sequence[sequence_index]
-            
-            if pressed_key == expected_key:
-                sequence_index += 1
-                display_cheat_progress()
-                if sequence_index == len(cheat_sequence):
-                    cheat_mode = True
-                    egg_visible = False
-                    print("CHEAT MODE ACTIVATED!")
-            
-            else:
-                print(f"Wrong key! Restarting sequence.")
-                sequence_index = 0
-        
-        glutPostRedisplay()
+            # Ensure sequence_index is within bounds
+            if sequence_index < len(cheat_sequence):
+                expected_key = cheat_sequence[sequence_index]
+                
+                if pressed_key == expected_key:
+                    sequence_index += 1
+                    display_cheat_progress()
+                    if sequence_index == len(cheat_sequence):
+                        cheat_unlocked = True
+                        cheat_mode = True
+                        egg_visible = False
+                        print("CHEAT MODE ACTIVATED!")
+                else:
+                    print(f"Wrong key! Restarting sequence.")
+                    sequence_index = 0
 
-    #normal player movement
+    # Normal player movement  
     angle_step = 5
     if not game_over:
         angle = math.radians(player_angle)
@@ -619,7 +642,7 @@ def specialKeyListener(key, x, y):
 def mouseListener(button, state, x, y):
     global camera_mode, rotate, player_angle
     
-    if game_over or goal_achieved:
+    if game_over or goal_achieved or paused:
         return
     
     if button == GLUT_LEFT_BUTTON and state == GLUT_DOWN and not game_over: #camera toggle
@@ -691,14 +714,11 @@ def display_cheat_progress():
 
 
 def cheat():
-    global player_pos, skip_wall_collision
+    global player_pos
 
     if cheat_mode:
         if player_pos[1] < 250:    
             player_pos[1] += 10    
-        skip_wall_collision = True
-    else:
-        skip_wall_collision = False
 
 
 def idle():
@@ -721,23 +741,28 @@ def showScreen():
     draw_maze()
     
     # game info text
-    if not game_over and not cheat_ready or cheat_mode:
-        draw_text(10, 570, f"Player Life Remaining: {life} ")
-        draw_text(10, 545, f"Collected Treasure: {collected}")
-        draw_text(10, 520, f"Remaining Treasure: {remaining}")
+    if not game_over:
+        draw_text1(10, 570, f"Player Life Remaining: {life} ")
+        draw_text1(10, 545, f"Collected Treasure: {collected}")
+        draw_text1(10, 520, f"Remaining Treasure: {remaining}")
+    
+    if cheat_unlocked and not game_over:
+        draw_text2(10, 495, f"Cheat Mode Activated!")
+    
     if game_over:
-        draw_text(10, 550, f"Game Over.")
-        draw_text(10, 525, f'Press "R" to RESTART the Game.')
+        draw_text1(430, 550, f"Game Over.")
+        draw_text2(300, 520, f"Total Treasure Collected: {collected}   |  Press 'R' to RESTART the Game.")
 
-    if cheat_ready and not cheat_mode and not paused:
-        draw_text(300, 550, f"You found a mysterious egg! A whisper echoes...")
-        draw_text(300, 525, f"'UP UP DOWN DOWN LEFT RIGHT LEFT RIGHT'")
+    if cheat_ready and not cheat_mode and not paused and not cheat_unlocked:
+        draw_text1(350, 550, f"You found a mysterious egg! A whisper echoes...")
+        draw_text1(350, 525, f"'UP UP DOWN DOWN LEFT RIGHT LEFT RIGHT'")
     
     if not goal_achieved and paused:
-        draw_text(350, 520, "Game Paused. Press 'P' to Resume.")
+        draw_text2(400, 520, "Game Paused   |   Press 'P' to Resume.")
     
     if goal_achieved:
-        draw_text(430, 520, "You Win!!")
+        draw_text1(430, 520, "You Win!!")
+        draw_text2(400, 490, "Press 'R' to Play Again.")
 
 
     draw_player()
