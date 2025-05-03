@@ -460,7 +460,7 @@ def keyboardListener(key, x, y):
     global cheat_mode, cheat_unlocked
     global game_over, life, collected, remaining, treasure_positions, paused
     global player_pos, enemies, cheat_ready, sequence_index
-    global player_angle, camera_mode, goal_achieved, last_hit_time
+    global player_angle, camera_mode, goal_achieved, last_hit_time,rotate
     global cheat_egg_pos, egg_visible
     
     if key == b'r':  # restart
@@ -479,6 +479,9 @@ def keyboardListener(key, x, y):
         camera_mode = "third"
         goal_achieved = False
         last_hit_time = 0
+        rotate = False
+        paused = False
+        enemies = []
  
         cheat_mode = False
         cheat_ready = False
@@ -640,10 +643,10 @@ def mouseListener(button, state, x, y):
         else:
             print("Rotate: On")
 
-def set_camera(): #remove before submission
-    gluLookAt(camera_pos[0], camera_pos[1], camera_pos[2], 
-              0,0,0,   
-              0, 1, 0)
+# def set_camera(): #remove before submission
+#     gluLookAt(camera_pos[0], camera_pos[1], camera_pos[2], 
+#               0,0,0,   
+#               0, 1, 0)
 
 def set_camera(): #corrected set_camera() for first and third person mode
     global player_pos, player_angle, camera_mode
