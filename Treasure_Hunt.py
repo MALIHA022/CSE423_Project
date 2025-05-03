@@ -145,7 +145,7 @@ def draw_maze():
                 draw_cube(x, 25, z)
 
 def is_wall(x, z, skip_wall_collision_player): #maze walls collision detection
-    player_radius = 25
+    player_radius = 25 
 
     maze_width = len(maze[0]) * GRID_LENGTH
     maze_height = len(maze) * GRID_LENGTH
@@ -272,14 +272,14 @@ def spawn_enemy():
 
     enemy_positions = [
         (0, 50, -430, "x"),
+        (-20, 50, 100, "z"),
         (-1120, 50, 1440, "z"), 
         (-1100, 50, -840, "z"), 
         (-730, 50, 550, "z"),
-        (250, 45, 550, 'z'),
+        (250, 50, 550, 'z'),
         (1350, 50, -1130, 'x'), 
         (900, 50, 1000, "z"),
-        (1450, 50, -500, 'z'), 
-    ]
+        (1450, 50, -500, 'z')]
 
     for x, y, z, go in enemy_positions:
         # maze coordinates
@@ -303,7 +303,7 @@ def update_enemy_positions():
         return 
     
     for enemy in enemies:
-        speed = 3.0
+        speed = 4.0
 
         if enemy["go"] == "x":
             enemy["x"] += enemy["dir"] * speed
